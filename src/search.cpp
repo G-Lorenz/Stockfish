@@ -506,7 +506,7 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-	  double quadTD = Time.maximum() * Time.maximum() * 5.7816e-10; // (60000*ln2)^-2=5.7816e-10
+	  double quadTD = Time.optimum() * Time.optimum() * 5.7816e-10; // (60000*ln2)^-2=5.7816e-10
 	  int coeff1 = static_cast<int>(38 * quadTD  + 66);
 	  int coeff2 = static_cast<int>(41 * quadTD  + 70);
 	  int coeff3 = static_cast<int>(46 * quadTD  + 404);
