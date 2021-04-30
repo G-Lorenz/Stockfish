@@ -509,7 +509,7 @@ void Thread::search() {
 	  double quadTD = Time.optimum() * Time.optimum() * 5.7816e-10; // (60000*ln2)^-2=5.7816e-10
 	  int coeff1 = static_cast<int>(38 * quadTD  + 66);
 	  int coeff2 = static_cast<int>(41 * quadTD  + 70);
-	  int coeff3 = static_cast<int>(46 * quadTD  + 404);
+	  int coeff3 = static_cast<int>(-46 * quadTD  + 451);
           double fallingEval = (3180 +  coeff1 * (mainThread->bestPreviousScore - bestValue)
                                      +  coeff2 * (mainThread->iterValue[iterIdx] - bestValue)
                                      +  coeff3 * std::clamp(int(-bestValue) - 113, 0, 333) / 256
