@@ -506,8 +506,8 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-          double fallingEval = (3180 + 106 * (mainThread->bestPreviousScore - bestValue)
-                                    + 106 * (mainThread->iterValue[iterIdx] - bestValue)) / 8250.0;
+          double fallingEval = (3180 + 110 * (mainThread->bestPreviousScore - bestValue)
+                                    + 110 * (mainThread->iterValue[iterIdx] - bestValue)) / 8250.0;
           fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
