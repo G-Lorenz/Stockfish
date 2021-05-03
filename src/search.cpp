@@ -506,7 +506,7 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-	  int coeff = static_cast<int>(48 * (Time.optimum() * 1.6137e-5) + 60); // (89400*ln2)^-1=1.6137e-5
+	  int coeff = static_cast<int>(46.2 * (Time.optimum() * 1.6137e-5) + 61.3); // (89400*ln2)^-1=1.6137e-5
 	  double fallingEval = (3180 + coeff * (mainThread->bestPreviousScore - bestValue)
                                      + coeff * (mainThread->iterValue[iterIdx] - bestValue)) / 8250.0;
           fallingEval = std::clamp(fallingEval, 0.5, 1.5);
