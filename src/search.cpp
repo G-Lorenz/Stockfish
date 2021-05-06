@@ -508,8 +508,8 @@ void Thread::search() {
       {
 	  int coeff1 = static_cast<int>(44.4 * (Time.optimum() * 1.6137e-5) + 59.6); // (89400*ln2)^-1=1.6137e-5
 	  int coeff2 = static_cast<int>(48 * (Time.optimum() * 1.6137e-5) + 63);
-	  double fallingEval = (3180 + std::clamp(coeff1, 67, 193) * (mainThread->bestPreviousScore - bestValue)
-                                     + std::clamp(coeff2, 71, 207) * (mainThread->iterValue[iterIdx] - bestValue)) / 8250.0;
+	  double fallingEval = (3180 + std::clamp(coeff1, 65, 193) * (mainThread->bestPreviousScore - bestValue)
+                                     + std::clamp(coeff2, 69, 207) * (mainThread->iterValue[iterIdx] - bestValue)) / 8250.0;
           fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
