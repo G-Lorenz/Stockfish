@@ -506,13 +506,11 @@ void Thread::search() {
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-	  double quadTD = Time.optimum() * Time.optimum() * 5.7816e-10; // (60000*ln2)^-2=5.7816e-10
-	  int coeff1 = static_cast<int>(38 * quadTD  + 66);
-	  int coeff2 = static_cast<int>(41 * quadTD  + 70);
-	  int coeff3 = static_cast<int>(-46 * quadTD  + 451);
-          double fallingEval = (3180 +  coeff1 * (mainThread->bestPreviousScore - bestValue)
-                                     +  coeff2 * (mainThread->iterValue[iterIdx] - bestValue)
-                                     +  coeff3 * std::clamp(int(-bestValue) - 113, 0, 333) / 256
+	  int coeff1 = static_cast<int>(44.4 * (Time.optimum() * 1.6137e-5) + 59.6); // (89400*ln2)^-1=1.6137e-5
+	  int coeff2 = static_cast<int>(48 * (Time.optimum() * 1.6137e-5) + 63);
+          double fallingEval = (3180 + std::clamp(coeff1, 67, 193) * (mainThread->bestPreviousScore - bestValue)
+                                     + std::clamp(coeff2, 70, 207) * (mainThread->iterValue[iterIdx] - bestValue)
+                                     + coeff3 * std::clamp(int(-bestValue) - 113, 0, 333) / 256
                                ) / 8250.0;
           fallingEval =  std::clamp(fallingEval, 0.5, 1.5);
 
