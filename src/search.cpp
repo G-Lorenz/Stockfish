@@ -509,9 +509,13 @@ void Thread::search() {
 	  int coeff1 = static_cast<int>(44.4 * (Time.optimum() * 1.6137e-5) + 59.6); // (89400*ln2)^-1=1.6137e-5
 	  int coeff2 = static_cast<int>(48 * (Time.optimum() * 1.6137e-5) + 63);
 	  int coeff3 = static_cast<int>(-54 * (Time.optimum() * 1.6137e-5) + 459);
+	  int coeff4 = static_cast<int>(15.6 * (Time.optimum() * 1.6137e-5) + 97.4);
+	  int coeff5 = static_cast<int>(159.6 * (Time.optimum() * 1.6137e-5) + 173.4);
+	  coeff4 = std::clamp(coeff4, 100, 144);
+	  coeff5 = std::clamp(coeff5, 200, 652);
           double fallingEval = (3180 + std::clamp(coeff1, 67, 193) * (mainThread->bestPreviousScore - bestValue)
                                      + std::clamp(coeff2, 70, 207) * (mainThread->iterValue[iterIdx] - bestValue)
-                                     + std::clamp(coeff3, 297, 450) * std::clamp(int(-bestValue) - 113, 0, 333) / 256
+                                     + std::clamp(coeff3, 297, 450) * std::clamp(int(-bestValue) - coeff4, 0, coeff5) / 256
                                ) / 8250.0;
           fallingEval =  std::clamp(fallingEval, 0.5, 1.5);
 
