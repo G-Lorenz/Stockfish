@@ -479,9 +479,9 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
-          // Less time in positional situations. Use material balance as definition 
+          // More time in positional situations. Use material balance as definition 
           int delta_npm = abs(mainThread->rootPos.non_pawn_material(WHITE) - mainThread->rootPos.non_pawn_material(BLACK));
-          double positionalTimeCorr = (delta_npm <= (BishopValueMg - KnightValueMg) ? 1 : 1.1);
+          double positionalTimeCorr = (delta_npm <= (BishopValueMg - KnightValueMg) ? 1.05 : 0.95);
 
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * positionalTimeCorr;
 
