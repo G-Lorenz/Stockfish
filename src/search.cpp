@@ -479,7 +479,11 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
-          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
+	  // More time in positional situations. Use material balance as definition 
+	  int delta_npm = abs(mainThread->rootPos.non_pawn_material(WHITE) - mainThread->rootPos.non_pawn_material(BLACK));
+	  double positionalTimeCorr = (delta_npm <= (BishopValueMg - KnightValueMg) ? 1.1 : 1);
+
+          double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * positionalTimeCorr;
 
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
