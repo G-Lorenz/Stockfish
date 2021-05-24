@@ -481,7 +481,7 @@ void Thread::search() {
 
           // More time in positional situations. Use material balance as definition 
           int delta_npm = abs(mainThread->rootPos.non_pawn_material(WHITE) - mainThread->rootPos.non_pawn_material(BLACK));
-          double positionalTimeCorr = (delta_npm <= (BishopValueMg - KnightValueMg) ? 1.05 : 0.95);
+          double positionalTimeCorr = (delta_npm <= (BishopValueMg - KnightValueMg) ? 1.1 : 0.9);
 
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * positionalTimeCorr;
 
