@@ -304,7 +304,7 @@ namespace {
   constexpr Score TrappedRook         = S( 55, 13);
   constexpr Score WeakQueenProtection = S( 14,  0);
   constexpr Score WeakQueen           = S( 56, 15);
-  constexpr Score WeakKingProtection  = S( 14,  0);
+  constexpr Score WeakKingProtection  = S( 21,  0);
 
 
 #undef S
@@ -700,7 +700,7 @@ namespace {
         // Additional bonus if weak piece is only protected by a queen
         score += WeakQueenProtection * popcount(weak & attackedBy[Them][QUEEN]);
 
-        // Additional bonus if weak piece is only protected by a king
+        // Additional bonus if weak piece is only protected by the king
         score += WeakKingProtection * popcount(weak & attackedBy[Them][KING]);
     }
 
