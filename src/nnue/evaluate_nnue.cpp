@@ -134,7 +134,7 @@ namespace Stockfish::Eval::NNUE {
   }
 
   // Evaluation function. Perform differential calculation.
-  Value evaluate(const Position& pos, bool adjusted) {
+  Value evaluate(Position& pos, bool adjusted) {
 
     // We manually align the arrays on the stack because with gcc < 9.3
     // overaligning stack variables with alignas() doesn't work correctly.
@@ -164,7 +164,7 @@ namespace Stockfish::Eval::NNUE {
     materialist = psqt;
     positional  = output[0];
 
-    //bool is_positional = positional > materialist;
+    pos.is_positional = positional > materialist;
 
     int delta_npm = abs(pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK));
     int entertainment = (adjusted && delta_npm <= BishopValueMg - KnightValueMg ? 7 : 0);

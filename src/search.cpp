@@ -480,7 +480,7 @@ void Thread::search() {
           }
           double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
-          double posTimeCorr = ((Eval::NNUE::is_positional()) ? 1.1 : 1);
+          double posTimeCorr = ((mainThread->rootPos.is_positional) ? 1.1 : 1);
 
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability * posTimeCorr;
 
