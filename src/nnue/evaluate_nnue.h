@@ -31,12 +31,7 @@ namespace Stockfish::Eval::NNUE {
   constexpr std::uint32_t HashValue =
       FeatureTransformer::get_hash_value() ^ Network::get_hash_value();
 
-  int positional, materialist;
-
-  inline bool is_positional(){
-  	return positional > materialist;
-  }
-
+  bool is_positional;
 
   // Deleter for automating release of memory area
   template <typename T>
