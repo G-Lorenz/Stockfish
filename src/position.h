@@ -163,7 +163,7 @@ public:
   Score psq_score() const;
   Value non_pawn_material(Color c) const;
   Value non_pawn_material() const;
-  bool is_positional;
+  bool is_positional() const;
 
   // Position consistency check, for debugging
   bool pos_is_ok() const;
@@ -199,6 +199,8 @@ private:
   Color sideToMove;
   Score psq;
   bool chess960;
+  int positional;
+  int materialist;
 };
 
 extern std::ostream& operator<<(std::ostream& os, const Position& pos);
@@ -332,6 +334,10 @@ inline Value Position::non_pawn_material(Color c) const {
 
 inline Value Position::non_pawn_material() const {
   return non_pawn_material(WHITE) + non_pawn_material(BLACK);
+}
+
+inline bool Position::is_positional() const {
+  return positional > materialist;
 }
 
 inline int Position::game_ply() const {
