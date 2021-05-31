@@ -30,8 +30,8 @@ class Position;
 
 namespace Eval {
 
-  std::string trace(Position& pos);
-  Value evaluate(Position& pos);
+  std::string trace(const Position& pos);
+  Value evaluate(const Position& pos);
 
   extern bool useNNUE;
   extern std::string eval_file_loaded;
