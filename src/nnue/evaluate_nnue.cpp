@@ -161,8 +161,8 @@ namespace Stockfish::Eval::NNUE {
     const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto output = network[bucket]->propagate(transformedFeatures, buffer);
 
-    materialist = psqt;
-    positional  = output[0];
+    int materialist = psqt;
+    int positional  = output[0];
 
     //bool is_positional = positional > materialist;
 
