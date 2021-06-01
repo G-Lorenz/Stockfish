@@ -41,6 +41,8 @@ namespace Stockfish::Eval::NNUE {
   std::string fileName;
   std::string netDescription;
 
+  int materialist, positional;
+
   namespace Detail {
 
   // Initialize the evaluation function parameters
@@ -161,8 +163,8 @@ namespace Stockfish::Eval::NNUE {
     const auto psqt = featureTransformer->transform(pos, transformedFeatures, bucket);
     const auto output = network[bucket]->propagate(transformedFeatures, buffer);
 
-    int materialist = psqt;
-    int positional  = output[0];
+    materialist = psqt;
+    positional  = output[0];
 
     //bool is_positional = positional > materialist;
 
