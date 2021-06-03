@@ -458,7 +458,7 @@ namespace {
             // Bonus for knights (UncontestedOutpost) if few relevant targets
             bb = OutpostRanks & (attackedBy[Us][PAWN] | shift<Down>(pos.pieces(PAWN)))
                               & ~pe->pawn_attacks_span(Them)
-                              & pos.is_on_semiopen_file(Us, s);
+                              & (pos.is_on_semiopen_file(Us, s) ? AllSquares : ~AllSquares);
             Bitboard targets = pos.pieces(Them) & ~pos.pieces(PAWN);
 
             if (   Pt == KNIGHT
