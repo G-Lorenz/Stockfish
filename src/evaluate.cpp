@@ -267,7 +267,7 @@ namespace {
   };
 
   constexpr Score RookOnClosedFile = S(10, 5);
-  constexpr Score RookOnOpenFile[] = { S(14, 6), S(42, 26) };
+  constexpr Score RookOnOpenFile[] = { S(16, 6), S(44, 26) };
 
   // ThreatByMinor/ByRook[attacked PieceType] contains bonuses according to
   // which piece type attacks which one. Attacks on lesser pieces which are
