@@ -291,6 +291,7 @@ namespace {
   constexpr Score KnightOnQueen       = S( 16, 11);
   constexpr Score LongDiagonalBishop  = S( 45,  0);
   constexpr Score MinorBehindPawn     = S( 18,  3);
+  constexpr Score OutpostOnOpenFile   = S(  5,  0);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
   constexpr Score ReachableOutpost    = S( 31, 22);
@@ -469,6 +470,10 @@ namespace {
                 score += Outpost[Pt == BISHOP];
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
+
+            // Bonus if the piece is on an outpost square on a (semi-)open file
+            if (bb & s && pos.is_on_semiopen_file(Us, s))
+                score += OutpostOnOpenFile;
 
             // Bonus for a knight or bishop shielded by pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)
