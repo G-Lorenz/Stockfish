@@ -472,7 +472,9 @@ namespace {
                 score += ReachableOutpost;
 
             // Bonus if the piece is on an outpost square on a (semi-)open file
-            if (bb & s && pos.is_on_semiopen_file(Us, s))
+            if (   bb & s 
+                && pos.is_on_semiopen_file(Us, s)
+                && pos.count<ROOK>(Us) != 0)
                 score += OutpostOnOpenFile;
 
             // Bonus for a knight or bishop shielded by pawn
