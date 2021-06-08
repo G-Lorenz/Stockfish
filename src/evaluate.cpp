@@ -291,7 +291,7 @@ namespace {
   constexpr Score KnightOnQueen       = S( 16, 11);
   constexpr Score LongDiagonalBishop  = S( 45,  0);
   constexpr Score MinorBehindPawn     = S( 18,  3);
-  constexpr Score OutpostOnOpenFile   = S( 15,  0);
+  constexpr Score OutpostOnOpenFile   = S( 16,  0);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
   constexpr Score ReachableOutpost    = S( 31, 22);
@@ -472,7 +472,7 @@ namespace {
                 score += ReachableOutpost;
 
             // Bonus if the piece is on an outpost square on a (semi-)open file
-            if (   bb & s 
+            if (   bb & s & attackedBy[Us][PAWN]
                 && pos.is_on_semiopen_file(Us, s)
                 && (pos.count<ROOK>(Us) != 0 || pos.count<QUEEN>(Us) != 0))
                 score += OutpostOnOpenFile;
