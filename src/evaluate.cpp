@@ -473,7 +473,7 @@ namespace {
 
             // Bonus if the piece is on an outpost square on a (semi-)open file
             if (   bb & s & attackedBy[Us][PAWN]
-                && (pos.is_on_semiopen_file(Us, s) && !pos.is_on_semiopen_file(Them, s))
+                && (pos.is_on_semiopen_file(Us, s) && pos.is_on_semiopen_file(Them, s))
                 && (pos.count<ROOK>(Us) != 0 || pos.count<QUEEN>(Us) != 0))
                 score += OutpostOnOpenFile;
 
