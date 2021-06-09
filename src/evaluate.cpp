@@ -471,8 +471,8 @@ namespace {
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
 
-            // Bonus if the piece is on an outpost square on a (semi-)open file
-            if (   bb & s & attackedBy[Us][PAWN]
+            // Bonus if the piece is on an outpost square on a semiopen file
+            if (   bb & s
                 && (pos.is_on_semiopen_file(Us, s) && !pos.is_on_semiopen_file(Them, s))
                 && (pos.count<ROOK>(Us) != 0 || pos.count<QUEEN>(Us) != 0))
                 score += OutpostOnOpenFile;
