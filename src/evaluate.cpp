@@ -467,9 +467,9 @@ namespace {
                 && (!more_than_one(targets & (s & QueenSide ? QueenSide : KingSide))))
                 score += UncontestedOutpost * popcount(pos.pieces(PAWN) & (s & QueenSide ? QueenSide : KingSide));
             else if (bb & s)
-                score += Outpost[Pt == BISHOP] + (pos.is_on_semiopen_file(Us, s)
+                score += Outpost[Pt == BISHOP] + ((pos.is_on_semiopen_file(Us, s)
                                                   && (pos.count<ROOK>(Us) != 0 || pos.count<QUEEN>(Us) != 0)) ? OutpostOnOpenFile
-                                                                                                              : 0;
+                                                                                                              : 0);
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
                 score += ReachableOutpost;
 
