@@ -850,9 +850,9 @@ namespace {
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::isolated() const {
 
-    Score score = pe->isolated_score(Us);
+    Score score = SCORE_ZERO;
 
-    score -= Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
+    score -= Isolated * pe->isolatedCount[Us] / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
 
     return score;
   }
