@@ -175,7 +175,7 @@ namespace Trace {
   enum Tracing { NO_TRACE, TRACE };
 
   enum Term { // The first 8 entries are reserved for PieceType
-    MATERIAL = 8, IMBALANCE, MOBILITY, THREAT, PASSED, SPACE, WINNABLE, TOTAL, TERM_NB
+    MATERIAL = 8, IMBALANCE, MOBILITY, THREAT, PASSED, ISOLATED, SPACE, WINNABLE, TOTAL, TERM_NB
   };
 
   Score scores[TERM_NB][COLOR_NB];
@@ -288,6 +288,7 @@ namespace {
   constexpr Score BishopXRayPawns     = S(  4,  5);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
+  constexpr Score Isolated            = S( 16, 16);
   constexpr Score KnightOnQueen       = S( 16, 11);
   constexpr Score LongDiagonalBishop  = S( 45,  0);
   constexpr Score MinorBehindPawn     = S( 18,  3);
@@ -323,6 +324,7 @@ namespace {
     template<Color Us> Score king() const;
     template<Color Us> Score threats() const;
     template<Color Us> Score passed() const;
+    template<Color Us> Score isolated() const;
     template<Color Us> Score space() const;
     Value winnable(Score score) const;
 
@@ -843,6 +845,20 @@ namespace {
     return score;
   }
 
+  // Evaluation::isolated() evaluates the isolated pawns of the given color.
+
+  template<Tracing T> template<Color Us>
+  Score Evaluation<T>::isolated() const {
+
+    Score score = SCORE_ZERO;
+
+    score += popcount(pe->isolated_pawns(Us)) * Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
+
+    if constexpr (T)
+        Trace::add(PASSED, Us, score);
+
+    return score;
+  }
 
   // Evaluation::space() computes a space evaluation for a given side, aiming to improve game
   // play in the opening. It is based on the number of safe squares on the four central files
@@ -1031,8 +1047,9 @@ namespace {
     score += mobility[WHITE] - mobility[BLACK];
 
     // More complex interactions that require fully populated attack bitboards
-    score +=  king<   WHITE>() - king<   BLACK>()
-            + passed< WHITE>() - passed< BLACK>();
+    score +=  king<     WHITE>() - king<     BLACK>()
+            + passed<   WHITE>() - passed<   BLACK>()
+            + isolated< WHITE>() - isolated< BLACK>();
 
     if (lazy_skip(LazyThreshold2))
         goto make_v;
@@ -1181,6 +1198,7 @@ std::string Eval::trace(const Position& pos) {
      << " King safety | " << Term(KING)
      << "     Threats | " << Term(THREAT)
      << "      Passed | " << Term(PASSED)
+     << "    Isolated | " << Term(ISOLATED)
      << "       Space | " << Term(SPACE)
      << "    Winnable | " << Term(WINNABLE)
      << " ------------+-------------+-------------+------------\n"

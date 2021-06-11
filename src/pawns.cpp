@@ -177,9 +177,10 @@ namespace {
                 &&  (ourPawns & forward_file_bb(Them, s))
                 && !(theirPawns & adjacent_files_bb(s)))
                 score -= Doubled;
-            else
-                score -=  Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1)
-                        + WeakUnopposed * !opposed;
+            else{ // isolated pawns will be properly scored later in evaluation
+                score -= WeakUnopposed * !opposed;
+                e->isolatedPawns[Us] |= s;
+            }
         }
 
         else if (backward)
