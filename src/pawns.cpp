@@ -104,6 +104,7 @@ namespace {
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
     e->passedPawns[Us] = 0;
+    e->isolatedScore[Us] = SCORE_ZERO;
     e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
     e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
@@ -177,10 +178,8 @@ namespace {
                 &&  (ourPawns & forward_file_bb(Them, s))
                 && !(theirPawns & adjacent_files_bb(s)))
                 score -= Doubled;
-            else{ // isolated pawns will be properly scored later in evaluation
-                score -= WeakUnopposed * !opposed;
-                e->isolatedPawns[Us] |= s;
-            }
+            else // isolated pawns will be properly scored later in evaluation
+                e->isolatedScore[Us] -= WeakUnopposed * !opposed;
         }
 
         else if (backward)

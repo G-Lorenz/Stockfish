@@ -175,7 +175,7 @@ namespace Trace {
   enum Tracing { NO_TRACE, TRACE };
 
   enum Term { // The first 8 entries are reserved for PieceType
-    MATERIAL = 8, IMBALANCE, MOBILITY, THREAT, PASSED, ISOLATED, SPACE, WINNABLE, TOTAL, TERM_NB
+    MATERIAL = 8, IMBALANCE, MOBILITY, THREAT, PASSED, SPACE, WINNABLE, TOTAL, TERM_NB
   };
 
   Score scores[TERM_NB][COLOR_NB];
@@ -850,12 +850,9 @@ namespace {
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::isolated() const {
 
-    Score score = SCORE_ZERO;
+    Score score = pe->isolated_score(Us);
 
-    score -= popcount(pe->isolated_pawns(Us)) * Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
-
-    if constexpr (T)
-        Trace::add(PASSED, Us, score);
+    score -= Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
 
     return score;
   }
@@ -1023,7 +1020,8 @@ namespace {
 
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
-    score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
+    score += pe->pawn_score(WHITE)   - pe->pawn_score(BLACK)
+            + isolated<     WHITE>() - isolated<      BLACK>();
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
@@ -1047,9 +1045,8 @@ namespace {
     score += mobility[WHITE] - mobility[BLACK];
 
     // More complex interactions that require fully populated attack bitboards
-    score +=  king<     WHITE>() - king<     BLACK>()
-            + passed<   WHITE>() - passed<   BLACK>()
-            + isolated< WHITE>() - isolated< BLACK>();
+    score +=  king<  WHITE>() - king<  BLACK>()
+            + passed<WHITE>() - passed<BLACK>();
 
     if (lazy_skip(LazyThreshold2))
         goto make_v;
@@ -1198,7 +1195,6 @@ std::string Eval::trace(const Position& pos) {
      << " King safety | " << Term(KING)
      << "     Threats | " << Term(THREAT)
      << "      Passed | " << Term(PASSED)
-     << "    Isolated | " << Term(ISOLATED)
      << "       Space | " << Term(SPACE)
      << "    Winnable | " << Term(WINNABLE)
      << " ------------+-------------+-------------+------------\n"
