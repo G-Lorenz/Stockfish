@@ -852,7 +852,7 @@ namespace {
 
     Score score = SCORE_ZERO;
 
-    score += popcount(pe->isolated_pawns(Us)) * Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
+    score -= popcount(pe->isolated_pawns(Us)) * Isolated / (pos.count<BISHOP>(Us) + pos.count<KNIGHT>(Us) + 1);
 
     if constexpr (T)
         Trace::add(PASSED, Us, score);
