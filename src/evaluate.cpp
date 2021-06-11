@@ -1045,8 +1045,8 @@ namespace {
     score += mobility[WHITE] - mobility[BLACK];
 
     // More complex interactions that require fully populated attack bitboards
-    score +=  king<  WHITE>() - king<  BLACK>()
-            + passed<WHITE>() - passed<BLACK>();
+    score +=  king<   WHITE>() - king<   BLACK>()
+            + passed< WHITE>() - passed< BLACK>();
 
     if (lazy_skip(LazyThreshold2))
         goto make_v;
