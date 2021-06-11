@@ -288,6 +288,7 @@ namespace {
   constexpr Score BishopXRayPawns     = S(  4,  5);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
+  constexpr Score Isolated            = S( 16, 16);
   constexpr Score KnightOnQueen       = S( 16, 11);
   constexpr Score LongDiagonalBishop  = S( 45,  0);
   constexpr Score MinorBehindPawn     = S( 18,  3);
@@ -1010,8 +1011,8 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Load the Isolated scoring that was skipped
-    score -= make_score(16,16) * pe->isoCount[WHITE] / (pos.count<BISHOP>(WHITE) + pos.count<KNIGHT>(WHITE) + 1);
-    score += make_score(16,16) * pe->isoCount[BLACK] / (pos.count<BISHOP>(BLACK) + pos.count<KNIGHT>(BLACK) + 1);
+    score -= Isolated * pe->isolatedCount[WHITE] / (pos.count<BISHOP>(WHITE) + pos.count<KNIGHT>(WHITE) + 1);
+    score += Isolated * pe->isolatedCount[BLACK] / (pos.count<BISHOP>(BLACK) + pos.count<KNIGHT>(BLACK) + 1);
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {

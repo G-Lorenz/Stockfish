@@ -102,10 +102,10 @@ namespace {
 
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
 
-    e->isoCount[Us] = 0;
-    e->passedPawns[Us] = 0;
-    e->kingSquares[Us] = SQ_NONE;
-    e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
+    e->isolatedCount[Us] = 0;
+    e->passedPawns[Us]   = 0;
+    e->kingSquares[Us]   = SQ_NONE;
+    e->pawnAttacks[Us]   = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
     e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
 
     // Loop through all pawns of the current color and score each pawn
@@ -180,7 +180,7 @@ namespace {
             else
             {
                 score -= WeakUnopposed * !opposed;
-                ++e->isoCount[Us]; // Remember to subtract 1 (scaled) Isolated score
+                ++e->isolatedCount[Us]; // Isolated malus is scaled in evaluation.
 //                constexpr Score Isolated      = S( 3, 15);
             }
         }
