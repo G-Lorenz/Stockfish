@@ -489,6 +489,30 @@ Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 }
 
 
+/// Position::decreased_queen_mobility() computes if any available square
+/// for the Queen decreased her mobility. In this case she is going to be trapped.
+
+bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
+
+  Bitboard b;
+  int mob_new = 0;
+  int mob_old;
+  bool is_decreased;
+
+  b = attacks_bb<QUEEN>(square<QUEEN>(c), occupied);
+  mob_old = popcount(b);
+
+  /*for (Square s = SQ_A1; s <= SQ_A8; ++s){
+      if (b & s){
+          int temp = popcount(attacks_bb<QUEEN>(s, occupied));
+          if (temp > mob_new)
+              mob_new = temp;
+      }
+  }*/
+  is_decreased = mob_new < mob_old;
+  return is_decreased;
+}
+
 /// Position::legal() tests whether a pseudo-legal move is legal
 
 bool Position::legal(Move m) const {

@@ -133,6 +133,7 @@ public:
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
   bool opposite_bishops() const;
+  bool decreased_queen_mobility(Color c, Bitboard occupied) const;
   int  pawns_on_same_color_squares(Color c, Square s) const;
 
   // Doing and undoing moves
