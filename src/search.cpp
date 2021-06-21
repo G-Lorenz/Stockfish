@@ -1114,7 +1114,7 @@ moves_loop: // When in check, search starts from here
           extension = 1;
 
       // extend if queen is under trapping threat.
-      if (pos.decreased_queen_mobility(us, pos.pieces(us) | pos.pieces(~us)))
+      if (pos.count<QUEEN>(us)==1 && pos.decreased_queen_mobility(us, pos.pieces()))
           extension++;
 
       // Add extension to new depth
