@@ -1102,6 +1102,7 @@ moves_loop: // When in check, search starts from here
 
       // extend if queen is under trapping threat.
       if (   pos.count<QUEEN>(us)==1
+          && pos.count<ALL_PIECES>() > 26
           && depth > 6
           && pos.decreased_queen_mobility(us, pos.pieces()))
           extension++;
