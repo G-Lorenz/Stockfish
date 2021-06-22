@@ -495,23 +495,20 @@ Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
 
   Bitboard b;
-  int mob_old, mob_new;
+  int mob_old;
 
   b = attacks_bb<QUEEN>(square<QUEEN>(c), occupied);
   mob_old = popcount(b);
 
   // early exit if queen mobility is big.
-  if (mob_old > 16)
+  if (mob_old > 14)
       return false;
 
   for (Square s = SQ_A1; s <= SQ_H8; ++s)
   {
-      if (b & s)
-      {
-          mob_new = popcount(attacks_bb<QUEEN>(s, occupied));
-          if (mob_new >= mob_old)
-              return false;
-      }
+      if (   b & s
+          && popcount(attacks_bb<QUEEN>(s, occupied)) >= mob_old)
+          return false;
   }
   return true;
 }
