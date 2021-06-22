@@ -50,7 +50,6 @@ struct Stack {
   int statScore;
   int moveCount;
   bool inCheck;
-  bool dqm;
   bool ttPv;
   bool ttHit;
   int doubleExtensions;

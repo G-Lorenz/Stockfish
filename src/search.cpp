@@ -566,7 +566,6 @@ namespace {
     moveCount          = captureCount = quietCount = ss->moveCount = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
-    //ss->dqm            = pos.decreased_queen_mobility(us, pos.pieces(us) | pos.pieces(~us));
 
     // Check for the available remaining time
     if (thisThread == Threads.main())
@@ -1102,7 +1101,9 @@ moves_loop: // When in check, search starts from here
           extension = 1;
 
       // extend if queen is under trapping threat.
-      if (pos.count<QUEEN>(us)==1 && pos.decreased_queen_mobility(us, pos.pieces()))
+      if (   pos.count<QUEEN>(us)==1
+          && depth > 6
+          && pos.decreased_queen_mobility(us, pos.pieces()))
           extension++;
 
       // Add extension to new depth
