@@ -495,7 +495,7 @@ Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
 
   Bitboard b;
-  Square sq = square<QUEEN>(c);
+  Square sq = square<QUEEN>(c), s;
   int mob_old;
 
   constexpr Bitboard WhiteLowRanks = Rank1BB | Rank2BB | Rank3BB;
@@ -512,10 +512,10 @@ bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
   if (mob_old > 16)
       return false;
 
-  for (Square s = SQ_A1; s <= SQ_H8; ++s)
+  while (b)
   {
-      if (   b & s
-          && popcount(attacks_bb<QUEEN>(s, occupied)) >= mob_old)
+      s = pop_lsb(b);
+      if (popcount(attacks_bb<QUEEN>(s, occupied)) >= mob_old)
           return false;
   }
   return true;
