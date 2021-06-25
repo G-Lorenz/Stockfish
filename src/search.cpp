@@ -602,6 +602,7 @@ namespace {
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
     (ss+2)->killers[0]   = (ss+2)->killers[1] = MOVE_NONE;
     ss->doubleExtensions = (ss-1)->doubleExtensions;
+    ss->queenExtension   = (ss-1)->queenExtension;
     Square prevSq        = to_sq((ss-1)->currentMove);
 
     // Initialize statScore to zero for the grandchildren of the current position.
@@ -1100,11 +1101,15 @@ moves_loop: // When in check, search starts from here
                && abs(ss->staticEval) > Value(100))
           extension = 1;
 
-      // extend if queen is under trapping threat.
-      if (   pos.count<QUEEN>(us)==1
+      // extend (max 2) if queen is under trapping threat.
+      if (   ss->queenExtension < 3
+          && pos.count<QUEEN>(us)==1
           && depth > 8
           && pos.decreased_queen_mobility(us, pos.pieces()))
+      {
           extension++;
+          ss->queenExtension++;
+      }
 
       // Add extension to new depth
       newDepth += extension;
