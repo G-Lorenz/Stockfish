@@ -498,8 +498,8 @@ bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
   Square sq = square<QUEEN>(c), s;
   int mob_old;
 
-  constexpr Bitboard WhiteSafeSquares = Rank1BB | Rank2BB;
-  constexpr Bitboard BlackSafeSquares = Rank8BB | Rank7BB;
+  constexpr Bitboard WhiteSafeSquares = Rank1BB | Rank2BB | Rank3BB | Rank4BB;
+  constexpr Bitboard BlackSafeSquares = Rank8BB | Rank7BB | Rank6BB | Rank5BB;
 
   // early exit if queen is in one of the first three ranks.
   if (sq & (c == WHITE ? WhiteSafeSquares : BlackSafeSquares))
