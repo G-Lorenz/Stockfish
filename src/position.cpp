@@ -509,7 +509,7 @@ bool Position::decreased_queen_mobility(Color c, Bitboard occupied) const {
   mob_old = popcount(b);
 
   // early exit if queen mobility is big.
-  if (mob_old > 16)
+  if (mob_old > 17)
       return false;
 
   while (b)
