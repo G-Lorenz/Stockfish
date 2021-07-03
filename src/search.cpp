@@ -1430,23 +1430,26 @@ moves_loop: // When in check, search starts from here
             if (    ttValue != VALUE_NONE
                 && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
+
+            if (bestValue >= beta)
+                return bestValue;
         }
         else
+        {
             // In case of null move search use previous static eval with a different sign
             // and addition of two tempos
             ss->staticEval = bestValue =
             (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
                                              : -(ss-1)->staticEval;
-
-        // Stand pat. Return immediately if static value is at least beta
-        if (bestValue >= beta)
-        {
+            // Stand pat. Return immediately if static value is at least beta
+            if (bestValue >= beta)
+            {
             // Save gathered info in transposition table
-            if (!ss->ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 
-            return bestValue;
+                return bestValue;
+            }
         }
 
         if (PvNode && bestValue > alpha)
