@@ -806,7 +806,7 @@ namespace {
 
         pos.do_null_move(st);
 
-        Value nullValue = -search<NonPV>(pos, ss+1, -beta, -beta+1, depth-R, !cutNode);
+        Value nullValue = -qsearch<NonPV>(pos, ss+1, -beta, -beta+1, depth-R);
 
         pos.undo_null_move();
 
@@ -1359,7 +1359,6 @@ moves_loop: // When in check, search starts from here
 
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
-    assert(depth <= 0);
 
     Move pv[MAX_PLY+1];
     StateInfo st;
