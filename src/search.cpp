@@ -35,6 +35,8 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
+int A = 16, B = 16, C = 16, D = 16, E = 32768;
+
 namespace Stockfish {
 
 namespace Search {
@@ -511,6 +513,7 @@ void Thread::search() {
 }
 
 
+TUNE(SetRange(0, 64), A, B, C, D, SetDefaultRange, E, Search::init);
 namespace {
 
   // search<>() is the main search function for both PV and non-PV nodes
@@ -1024,10 +1027,10 @@ moves_loop: // When in check, search starts from here
               // Futility pruning: parent node (~5 Elo)
               if (   !ss->inCheck
                   && ss->staticEval + 174 + 157 * lmrDepth <= alpha
-                  &&  (*contHist[0])[movedPiece][to_sq(move)]
-                    + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)]
-                    + (*contHist[5])[movedPiece][to_sq(move)] / 3 < 28255)
+                  &&  A * (*contHist[0])[movedPiece][to_sq(move)] / 16
+                    + B * (*contHist[1])[movedPiece][to_sq(move)] / 16
+                    + C * (*contHist[3])[movedPiece][to_sq(move)] / 16
+                    + D * (*contHist[5])[movedPiece][to_sq(move)] / 16  < E)
                   continue;
 
               // Prune moves with negative SEE (~20 Elo)
