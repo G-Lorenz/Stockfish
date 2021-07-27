@@ -1174,7 +1174,7 @@ moves_loop: // When in check, search starts from here
                          - O;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= (ss->statScore + C * ss->inCheck + P * captureOrPromotion) / D;
+          r -= ss->statScore / D;
 
           // In general we want to cap the LMR depth search at newDepth. But if
           // reductions are really negative and movecount is low, we allow this move
