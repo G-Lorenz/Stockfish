@@ -35,7 +35,6 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
-int C = 0, P = 0;
 int D = 14721, O = 4923;
 
 namespace Stockfish {
@@ -513,7 +512,6 @@ void Thread::search() {
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
 
-TUNE(SetRange(-10000, 10000), C, P);
 TUNE(D, O);
 namespace {
 
