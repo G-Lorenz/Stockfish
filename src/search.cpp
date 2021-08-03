@@ -1160,7 +1160,7 @@ moves_loop: // When in check, search starts here
               r += 2;
 
           // Increase reduction if ttMove is a capture (~3 Elo)
-          if (ttCapture)
+          if (!captureOrPromotion && ttCapture)
               r++;
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
@@ -1170,8 +1170,7 @@ moves_loop: // When in check, search starts here
                          - 4923;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          if (!captureOrPromotion)
-	      r -= ss->statScore / 14721;
+	  r -= ss->statScore / 14721;
 
           // In general we want to cap the LMR depth search at newDepth. But if
           // reductions are really negative and movecount is low, we allow this move
