@@ -336,6 +336,7 @@ void Position::set_check_info(StateInfo* si) const {
 void Position::set_state(StateInfo* si) const {
 
   si->key = si->materialKey = 0;
+  si->flippedKey = 0;
   si->pawnKey = Zobrist::noPawns;
   si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
   si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
@@ -366,8 +367,37 @@ void Position::set_state(StateInfo* si) const {
   for (Piece pc : Pieces)
       for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
           si->materialKey ^= Zobrist::psq[pc][cnt];
+
+  if (count<PAWN>() == 0)
+     flip_key(si);
 }
 
+inline void Position::flip_key(StateInfo* si) const {
+
+  for (Bitboard b = flip_Vertical(pieces()); b; )
+  {
+      Square s = pop_lsb(b);
+      Piece pc = piece_on(s);
+      si->flippedKey ^= Zobrist::psq[pc][s];
+  }
+
+  if (sideToMove == BLACK)
+      si->flippedKey ^= Zobrist::side;
+}
+
+inline Bitboard Position::flip_Vertical(Bitboard b) const {
+
+   #ifdef IS_64BIT
+      return __builtin_bswap64(b);
+   #else
+      const uint64_t k1 = static_cast<uint64_t>(0x00FF00FF00FF00FF);
+      const uint64_t k2 = static_cast<uint64_t>(0x0000FFFF0000FFFF);
+      b = ((b >>  8) & k1) | ((b & k1) <<  8);
+      b = ((b >> 16) & k2) | ((b & k2) << 16);
+      b = ( b >> 32)       | ( b       << 32);
+      return b;
+   #endif
+}
 
 /// Position::set() is an overload to initialize the position object with
 /// the given endgame code string like "KBPKN". It is mainly a helper to
