@@ -35,8 +35,8 @@
 #include "uci.h"
 #include "syzygy/tbprobe.h"
 
-int C = 0, P = 0;
-int D = 14721, O = 4923;
+int C = 260, P = -507;
+int D = 15095, O = 4839;
 
 namespace Stockfish {
 
@@ -540,8 +540,9 @@ void Thread::search() {
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
 
-TUNE(SetRange(-10000, 10000), C, P);
-TUNE(D, O);
+TUNE(C, P);
+TUNE(SetRange(12000, 18000), D);
+TUNE(SetRange(3000, 7000), O);
 namespace {
 
   // search<>() is the main search function for both PV and non-PV nodes
@@ -1232,7 +1233,7 @@ moves_loop: // When in check, search starts here
                          - O;
 
           // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-          r -= ss->statScore / D;
+          r -= (ss->statScore + C * ss->inCheck + P * captureOrPromotion)/ D;
 
           // In general we want to cap the LMR depth search at newDepth. But if reductions
           // are really negative and movecount is low, we allow this move to be searched
