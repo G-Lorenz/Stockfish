@@ -61,7 +61,7 @@ namespace Stockfish {
 namespace Eval {
 
   bool useNNUE;
-  string eval_file_loaded = "None";
+  string currentEvalFileName = "None";
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -78,6 +78,8 @@ namespace Eval {
         return;
 
     string eval_file = string(Options["EvalFile"]);
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
     #define stringify2(x) #x
@@ -88,13 +90,13 @@ namespace Eval {
     #endif
 
     for (string directory : dirs)
-        if (eval_file_loaded != eval_file)
+        if (currentEvalFileName != eval_file)
         {
             if (directory != "<internal>")
             {
                 ifstream stream(directory + eval_file, ios::binary);
                 if (load_eval(eval_file, stream))
-                    eval_file_loaded = eval_file;
+                    currentEvalFileName = eval_file;
             }
 
             if (directory == "<internal>" && eval_file == EvalFileDefaultName)
@@ -109,7 +111,7 @@ namespace Eval {
 
                 istream stream(&buffer);
                 if (load_eval(eval_file, stream))
-                    eval_file_loaded = eval_file;
+                    currentEvalFileName = eval_file;
             }
         }
   }
@@ -118,16 +120,16 @@ namespace Eval {
   void NNUE::verify() {
 
     string eval_file = string(Options["EvalFile"]);
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
 
-    if (useNNUE && eval_file_loaded != eval_file)
+    if (useNNUE && currentEvalFileName != eval_file)
     {
-        UCI::OptionsMap defaults;
-        UCI::init(defaults);
 
         string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
         string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
         string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
-        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
+        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
         string msg5 = "The engine will be terminated now.";
 
         sync_cout << "info string ERROR: " << msg1 << sync_endl;
@@ -1051,26 +1053,22 @@ make_v:
 
     if (   pos.piece_on(SQ_A1) == W_BISHOP
         && pos.piece_on(SQ_B2) == W_PAWN)
-        correction += !pos.empty(SQ_B3) ? -CorneredBishop * 4
-                                        : -CorneredBishop * 3;
+        correction -= CorneredBishop;
 
     if (   pos.piece_on(SQ_H1) == W_BISHOP
         && pos.piece_on(SQ_G2) == W_PAWN)
-        correction += !pos.empty(SQ_G3) ? -CorneredBishop * 4
-                                        : -CorneredBishop * 3;
+        correction -= CorneredBishop;
 
     if (   pos.piece_on(SQ_A8) == B_BISHOP
         && pos.piece_on(SQ_B7) == B_PAWN)
-        correction += !pos.empty(SQ_B6) ? CorneredBishop * 4
-                                        : CorneredBishop * 3;
+        correction += CorneredBishop;
 
     if (   pos.piece_on(SQ_H8) == B_BISHOP
         && pos.piece_on(SQ_G7) == B_PAWN)
-        correction += !pos.empty(SQ_G6) ? CorneredBishop * 4
-                                        : CorneredBishop * 3;
+        correction += CorneredBishop;
 
-    return pos.side_to_move() == WHITE ?  Value(correction)
-                                       : -Value(correction);
+    return pos.side_to_move() == WHITE ?  Value(5 * correction)
+                                       : -Value(5 * correction);
   }
 
 } // namespace Eval
@@ -1083,7 +1081,7 @@ Value Eval::evaluate(const Position& pos) {
 
   Value v;
 
-  if (!Eval::useNNUE)
+  if (!useNNUE)
       v = Evaluation<NO_TRACE>(pos).value();
   else
   {
