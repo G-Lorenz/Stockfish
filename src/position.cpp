@@ -370,6 +370,8 @@ void Position::set_state(StateInfo* si) const {
 
   if (count<PAWN>() == 0)
      flip_key(si);
+  else
+     si->flippedKey = 0;
 }
 
 inline void Position::flip_key(StateInfo* si) const {
