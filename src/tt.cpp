@@ -133,7 +133,7 @@ TTEntry* TranspositionTable::probe(const Key key[], bool& found) const {
               tte[i].genBound8 = uint8_t(generation8 | (tte[i].genBound8 & (GENERATION_DELTA - 1))); // Refresh
 
               if (j != 0)
-                 tte[i].move16 = MOVE_NULL;
+                 tte[i].move16 = MOVE_NONE;
 
               return found = (bool)tte[i].depth8, &tte[i];
              }
