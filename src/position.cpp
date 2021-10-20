@@ -336,7 +336,7 @@ void Position::set_check_info(StateInfo* si) const {
 void Position::set_state(StateInfo* si) const {
 
   si->key = si->materialKey = 0;
-  si->flippedKey = 0;
+  si->flippedKey[0] = 0;
   si->pawnKey = Zobrist::noPawns;
   si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
   si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
@@ -370,24 +370,28 @@ void Position::set_state(StateInfo* si) const {
 
   if (count<PAWN>() == 0)
      flip_key(si);
-  else
-     si->flippedKey = 0;
 }
 
 inline void Position::flip_key(StateInfo* si) const {
 
-  for (Bitboard b = flip_Vertical(pieces()); b; )
+  Bitboard b = flip_vertical(pieces());
+  gen_keys(&(si->flippedKey[0]), b);
+}
+
+inline void Position::gen_keys(Key* key, Bitboard b) const {
+
+  while (b)
   {
       Square s = pop_lsb(b);
       Piece pc = piece_on(s);
-      si->flippedKey ^= Zobrist::psq[pc][s];
+      *key ^= Zobrist::psq[pc][s];
   }
 
   if (sideToMove == BLACK)
-      si->flippedKey ^= Zobrist::side;
+      *key ^= Zobrist::side;
 }
 
-inline Bitboard Position::flip_Vertical(Bitboard b) const {
+inline Bitboard Position::flip_vertical(Bitboard b) const {
 
    #ifdef IS_64BIT
       return __builtin_bswap64(b);

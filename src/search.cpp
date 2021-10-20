@@ -654,7 +654,8 @@ namespace {
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
     posKey[0] = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
-    posKey[1] = pos.flipped_key();
+    if (pos.count<PAWN>() == 0)
+       posKey[1] = pos.flipped_key();
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]

@@ -50,7 +50,7 @@ struct StateInfo {
 
   // Not copied when making a move (will be recomputed anyhow)
   Key        key;
-  Key        flippedKey;
+  Key        flippedKey[1];
   Bitboard   checkersBB;
   StateInfo* previous;
   Bitboard   blockersForKing[COLOR_NB];
@@ -152,7 +152,6 @@ public:
   Key material_key() const;
   Key pawn_key() const;
   Key flipped_key() const;
-  Bitboard flip_Vertical(Bitboard b) const;
 
   // Other properties of the position
   Color side_to_move() const;
@@ -182,7 +181,9 @@ private:
   void set_castling_right(Color c, Square rfrom);
   void set_state(StateInfo* si) const;
   void flip_key(StateInfo* si) const;
+  void gen_keys(Key* key, Bitboard b) const;
   void set_check_info(StateInfo* si) const;
+  Bitboard flip_vertical(Bitboard b) const;
 
   // Other helpers
   void move_piece(Square from, Square to);
@@ -327,8 +328,8 @@ inline Key Position::material_key() const {
 }
 
 inline Key Position::flipped_key() const {
-  return st->rule50 < 14 ? st->flippedKey
-                         : st->flippedKey ^ make_key((st->rule50 - 14) / 8);
+  return st->rule50 < 14 ? st->flippedKey[0]
+                         : st->flippedKey[0] ^ make_key((st->rule50 - 14) / 8);
 }
 
 inline Score Position::psq_score() const {
