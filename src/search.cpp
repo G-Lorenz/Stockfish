@@ -582,7 +582,7 @@ namespace {
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
-    Key posKey[2];
+    Key posKey[KEYS_NB];
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
@@ -655,7 +655,8 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey[0] = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     if (pos.count<PAWN>() == 0)
-       posKey[1] = pos.flipped_key();
+       for (int j = 1; j < KEYS_NB; ++j)
+            posKey[j] = pos.flipped_key(j-1);
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
@@ -1413,7 +1414,7 @@ moves_loop: // When in check, search starts here
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     TTEntry* tte;
-    Key posKey[2];
+    Key posKey[KEYS_NB];
     Move ttMove, move, bestMove;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
@@ -1446,7 +1447,9 @@ moves_loop: // When in check, search starts here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey[0] = pos.key();
-    posKey[1] = pos.flipped_key();
+    if (pos.count<PAWN>() == 0)
+       for (int j = 1; j < KEYS_NB; ++j)
+            posKey[j] = pos.flipped_key(j - 1);
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
@@ -1915,7 +1918,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     bool ttHit;
-    Key keys[2];
+    Key keys[KEYS_NB];
 
     assert(pv.size() == 1);
 
@@ -1924,7 +1927,9 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 
     pos.do_move(pv[0], st);
     keys[0] = pos.key();
-    keys[1] = pos.flipped_key();
+       if (pos.count<PAWN>() == 0)
+       for (int j = 1; j < KEYS_NB; ++j)
+            keys[j] = pos.flipped_key(j - 1);
     TTEntry* tte = TT.probe(keys, ttHit);
 
     if (ttHit)

@@ -336,7 +336,8 @@ void Position::set_check_info(StateInfo* si) const {
 void Position::set_state(StateInfo* si) const {
 
   si->key = si->materialKey = 0;
-  si->flippedKey[0] = 0;
+  for (int j = 0; j < KEYS_NB - 1; ++j)
+      si->flippedKey[j] = 0;
   si->pawnKey = Zobrist::noPawns;
   si->nonPawnMaterial[WHITE] = si->nonPawnMaterial[BLACK] = VALUE_ZERO;
   si->checkersBB = attackers_to(square<KING>(sideToMove)) & pieces(~sideToMove);
@@ -376,6 +377,18 @@ inline void Position::flip_key(StateInfo* si) const {
 
   Bitboard b = flip_vertical(pieces());
   gen_keys(&(si->flippedKey[0]), b);
+  b = mirror_horizontal(pieces());
+  gen_keys(&(si->flippedKey[1]), b);
+  b = flip_diagonal_A1H8(pieces());
+  gen_keys(&(si->flippedKey[2]), b);
+  b = flip_diagonal_A8H1(pieces());
+  gen_keys(&(si->flippedKey[3]), b);
+  b = rotate_180(pieces());
+  gen_keys(&(si->flippedKey[4]), b);
+  b = rotate_90_ckw(pieces());
+  gen_keys(&(si->flippedKey[5]), b);
+  b = rotate_90_ackw(pieces());
+  gen_keys(&(si->flippedKey[6]), b);
 }
 
 inline void Position::gen_keys(Key* key, Bitboard b) const {
@@ -391,18 +404,72 @@ inline void Position::gen_keys(Key* key, Bitboard b) const {
       *key ^= Zobrist::side;
 }
 
+//Fuctions from https://www.chessprogramming.org/Flipping_Mirroring_and_Rotating
 inline Bitboard Position::flip_vertical(Bitboard b) const {
 
-   #ifdef IS_64BIT
-      return __builtin_bswap64(b);
-   #else
-      const uint64_t k1 = static_cast<uint64_t>(0x00FF00FF00FF00FF);
-      const uint64_t k2 = static_cast<uint64_t>(0x0000FFFF0000FFFF);
-      b = ((b >>  8) & k1) | ((b & k1) <<  8);
-      b = ((b >> 16) & k2) | ((b & k2) << 16);
-      b = ( b >> 32)       | ( b       << 32);
-      return b;
-   #endif
+  #ifdef IS_64BIT
+     return __builtin_bswap64(b);
+  #else
+     const uint64_t k1 = static_cast<uint64_t>(0x00FF00FF00FF00FF);
+     const uint64_t k2 = static_cast<uint64_t>(0x0000FFFF0000FFFF);
+     b = ((b >>  8) & k1) | ((b & k1) <<  8);
+     b = ((b >> 16) & k2) | ((b & k2) << 16);
+     b = ( b >> 32)       | ( b       << 32);
+     return b;
+  #endif
+}
+
+inline  Bitboard Position::mirror_horizontal(Bitboard b) const {
+
+  const uint64_t k1 = static_cast<uint64_t>(0x5555555555555555);
+  const uint64_t k2 = static_cast<uint64_t>(0x3333333333333333);
+  const uint64_t k4 = static_cast<uint64_t>(0x0f0f0f0f0f0f0f0f);
+  b = ((b >> 1) & k1) +  2*(b & k1);
+  b = ((b >> 2) & k2) +  4*(b & k2);
+  b = ((b >> 4) & k4) + 16*(b & k4);
+  return b;
+}
+
+inline  Bitboard Position::flip_diagonal_A1H8(Bitboard b) const {
+
+  uint64_t t;
+  const uint64_t k1 = static_cast<uint64_t>(0x5500550055005500);
+  const uint64_t k2 = static_cast<uint64_t>(0x3333000033330000);
+  const uint64_t k4 = static_cast<uint64_t>(0x0f0f0f0f00000000);
+  t  = k4 & (b ^ (b << 28));
+  b ^=       t ^ (t >> 28) ;
+  t  = k2 & (b ^ (b << 14));
+  b ^=       t ^ (t >> 14) ;
+  t  = k1 & (b ^ (b <<  7));
+  b ^=       t ^ (t >>  7) ;
+  return b;
+}
+
+inline  Bitboard Position::flip_diagonal_A8H1(Bitboard b) const {
+
+  uint64_t t;
+  const uint64_t k1 = static_cast<uint64_t>(0xaa00aa00aa00aa00);
+  const uint64_t k2 = static_cast<uint64_t>(0xcccc0000cccc0000);
+  const uint64_t k4 = static_cast<uint64_t>(0xf0f0f0f00f0f0f0f);
+  t  =       b ^ (b << 36) ;
+  b ^= k4 & (t ^ (b >> 36));
+  t  = k2 & (b ^ (b << 18));
+  b ^=       t ^ (t >> 18) ;
+  t  = k1 & (b ^ (b <<  9));
+  b ^=       t ^ (t >>  9) ;
+  return b;
+}
+
+inline  Bitboard Position::rotate_180(Bitboard b) const {
+  return mirror_horizontal(flip_vertical(b));
+}
+
+inline  Bitboard Position::rotate_90_ckw(Bitboard b) const {
+  return flip_vertical(flip_diagonal_A1H8(b));
+}
+
+inline  Bitboard Position::rotate_90_ackw(Bitboard b) const {
+  return flip_vertical(flip_diagonal_A8H1(b));
 }
 
 /// Position::set() is an overload to initialize the position object with

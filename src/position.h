@@ -50,7 +50,7 @@ struct StateInfo {
 
   // Not copied when making a move (will be recomputed anyhow)
   Key        key;
-  Key        flippedKey[1];
+  Key        flippedKey[KEYS_NB - 1];
   Bitboard   checkersBB;
   StateInfo* previous;
   Bitboard   blockersForKing[COLOR_NB];
@@ -151,7 +151,7 @@ public:
   Key key_after(Move m) const;
   Key material_key() const;
   Key pawn_key() const;
-  Key flipped_key() const;
+  Key flipped_key(int j) const;
 
   // Other properties of the position
   Color side_to_move() const;
@@ -184,6 +184,12 @@ private:
   void gen_keys(Key* key, Bitboard b) const;
   void set_check_info(StateInfo* si) const;
   Bitboard flip_vertical(Bitboard b) const;
+  Bitboard mirror_horizontal(Bitboard b) const;
+  Bitboard flip_diagonal_A1H8(Bitboard b) const;
+  Bitboard flip_diagonal_A8H1(Bitboard b) const;
+  Bitboard rotate_180(Bitboard b) const;
+  Bitboard rotate_90_ckw(Bitboard b) const;
+  Bitboard rotate_90_ackw(Bitboard b) const;
 
   // Other helpers
   void move_piece(Square from, Square to);
@@ -327,9 +333,9 @@ inline Key Position::material_key() const {
   return st->materialKey;
 }
 
-inline Key Position::flipped_key() const {
-  return st->rule50 < 14 ? st->flippedKey[0]
-                         : st->flippedKey[0] ^ make_key((st->rule50 - 14) / 8);
+inline Key Position::flipped_key(int j) const {
+  return st->rule50 < 14 ? st->flippedKey[j]
+                         : st->flippedKey[j] ^ make_key((st->rule50 - 14) / 8);
 }
 
 inline Score Position::psq_score() const {

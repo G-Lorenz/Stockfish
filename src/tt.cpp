@@ -119,9 +119,9 @@ void TranspositionTable::clear() {
 
 TTEntry* TranspositionTable::probe(const Key key[], bool& found) const {
 
-  for (int j = 0; j < 2; ++j)
+  for (int j = 0; j < KEYS_NB; ++j)
   {
-      if (key[j] == static_cast<Key>(0))
+      if (key[j] == 0)
          continue;
 
       TTEntry* const tte = first_entry(key[j]);

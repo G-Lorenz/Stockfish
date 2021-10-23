@@ -104,6 +104,7 @@ constexpr bool Is64Bit = false;
 #endif
 
 typedef uint64_t Key;
+#define KEYS_NB 8
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
