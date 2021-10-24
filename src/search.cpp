@@ -654,9 +654,8 @@ namespace {
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
     posKey[0] = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
-    if (pos.count<PAWN>() == 0)
-       for (int j = 1; j < KEYS_NB; ++j)
-            posKey[j] = pos.flipped_key(j-1);
+    for (int j = 1; j < KEYS_NB; ++j)
+         posKey[j] = pos.flipped_key(j-1);
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
@@ -1447,9 +1446,8 @@ moves_loop: // When in check, search starts here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey[0] = pos.key();
-    if (pos.count<PAWN>() == 0)
-       for (int j = 1; j < KEYS_NB; ++j)
-            posKey[j] = pos.flipped_key(j - 1);
+    for (int j = 1; j < KEYS_NB; ++j)
+         posKey[j] = pos.flipped_key(j - 1);
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
@@ -1927,9 +1925,8 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 
     pos.do_move(pv[0], st);
     keys[0] = pos.key();
-       if (pos.count<PAWN>() == 0)
-       for (int j = 1; j < KEYS_NB; ++j)
-            keys[j] = pos.flipped_key(j - 1);
+    for (int j = 1; j < KEYS_NB; ++j)
+         keys[j] = pos.flipped_key(j - 1);
     TTEntry* tte = TT.probe(keys, ttHit);
 
     if (ttHit)
