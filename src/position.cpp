@@ -375,19 +375,20 @@ void Position::set_state(StateInfo* si) const {
 
 inline void Position::flip_key(StateInfo* si) const {
 
-  Bitboard b = flip_vertical(pieces());
+  Bitboard p = pieces();
+  Bitboard b = flip_vertical(p);
   gen_keys(&(si->flippedKey[0]), b);
-  b = mirror_horizontal(pieces());
+  b = mirror_horizontal(p);
   gen_keys(&(si->flippedKey[1]), b);
-  b = flip_diagonal_A1H8(pieces());
+  b = flip_diagonal_A1H8(p);
   gen_keys(&(si->flippedKey[2]), b);
-  b = flip_diagonal_A8H1(pieces());
+  b = flip_diagonal_A8H1(p);
   gen_keys(&(si->flippedKey[3]), b);
-  b = rotate_180(pieces());
+  b = rotate_180(p);
   gen_keys(&(si->flippedKey[4]), b);
-  b = rotate_90_ckw(pieces());
+  b = rotate_90_ckw(p);
   gen_keys(&(si->flippedKey[5]), b);
-  b = rotate_90_ackw(pieces());
+  b = rotate_90_ackw(p);
   gen_keys(&(si->flippedKey[6]), b);
 }
 
