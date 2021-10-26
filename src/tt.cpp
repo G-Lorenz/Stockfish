@@ -119,9 +119,13 @@ void TranspositionTable::clear() {
 
 TTEntry* TranspositionTable::probe(const Key key[], bool& found) const {
 
-  for (int j = 0; j < KEYS_NB && key[j] != 0; ++j)
+  int j = 0;
+  TTEntry* tte = first_entry(key[0]);
+
+  do
   {
-      TTEntry* const tte = first_entry(key[j]);
+      if (j != 0)
+          tte = first_entry(key[j]);
       const uint16_t key16 = (uint16_t)key[j];  // Use the low 16 bits as key inside the cluster
 
       for (int i = 0; i < ClusterSize; ++i)
@@ -134,10 +138,12 @@ TTEntry* TranspositionTable::probe(const Key key[], bool& found) const {
 
               return found = (bool)tte[i].depth8, &tte[i];
              }
+      ++j;
   }
+  while (j < KEYS_NB && key[j] != 0);
+
 
   // Find an entry to be replaced according to the replacement strategy
-  TTEntry* const tte = first_entry(key[0]);
   TTEntry* replace = tte;
   for (int i = 1; i < ClusterSize; ++i)
       // Due to our packed storage format for generation and its cyclic
