@@ -988,7 +988,9 @@ namespace {
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) > lazyThreshold + pos.non_pawn_material() / 32;
+        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
+                                                        + std::abs(pos.this_thread()->bestValue) * 5 / 4
+                                                        + pos.non_pawn_material() / 32;
     };
 
     if (lazy_skip(LazyThreshold1))
@@ -1081,37 +1083,26 @@ Value Eval::evaluate(const Position& pos) {
 
   Value v;
 
-  if (!useNNUE)
-      v = Evaluation<NO_TRACE>(pos).value();
+  // Deciding between classical and NNUE eval: for high PSQ imbalance we use classical,
+  // but we switch to NNUE during long shuffling or with high material on the board.
+
+  if (  !useNNUE
+      || abs(eg_value(pos.psq_score())) * 5 > (850 + pos.non_pawn_material() / 64) * (5 + pos.rule50_count()))
+      v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
-      // Scale and shift NNUE for compatibility with search and classical evaluation
-      auto  adjusted_NNUE = [&]()
-      {
-         int scale =   883
-                     + 32 * pos.count<PAWN>()
-                     + 32 * pos.non_pawn_material() / 1024;
+      int scale =   898
+                  + 24 * pos.count<PAWN>()
+                  + 33 * pos.non_pawn_material() / 1024;
 
-         Value nnue = NNUE::evaluate(pos, true) * scale / 1024;
+       v = NNUE::evaluate(pos, true) * scale / 1024;  // NNUE
 
-         if (pos.is_chess960())
-             nnue += fix_FRC(pos);
-
-         return nnue;
-      };
-
-      // If there is PSQ imbalance we use the classical eval, but we switch to
-      // NNUE eval faster when shuffling or if the material on the board is high.
-      int r50 = pos.rule50_count();
-      Value psq = Value(abs(eg_value(pos.psq_score())));
-      bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
-
-      v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
-                    : adjusted_NNUE();                   // NNUE
+       if (pos.is_chess960())
+           v += fix_FRC(pos);
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
+  v = v * (207 - pos.rule50_count()) / 207;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
@@ -1137,6 +1128,7 @@ std::string Eval::trace(Position& pos) {
   std::memset(scores, 0, sizeof(scores));
 
   pos.this_thread()->trend = SCORE_ZERO; // Reset any dynamic contempt
+  pos.this_thread()->bestValue = VALUE_ZERO; // Reset bestValue for lazyEval
 
   v = Evaluation<TRACE>(pos).value();
 
