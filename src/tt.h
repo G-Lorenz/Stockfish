@@ -72,16 +72,16 @@ class TranspositionTable {
 
   struct Cluster {
     TTEntry entry[ClusterSize]; // 10x3=30
-    uint8_t gen8[2];
+    uint16_t gen8;
   };
 
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
 
   // Constants used to refresh the hash table periodically
-  static constexpr unsigned GENERATION_BITS  = 3;                                // nb of bits reserved for other things
-  static constexpr int      GENERATION_DELTA = (1 << GENERATION_BITS);           // increment for generation field
-  static constexpr int      GENERATION_CYCLE = 255 + (1 << GENERATION_BITS);     // cycle length
-  static constexpr int      GENERATION_MASK  = (0xFF << GENERATION_BITS) & 0xFF; // mask to pull out generation number
+  static constexpr unsigned GENERATION_BITS  = 5;                                    // bit of a single generation entry
+  static constexpr int      GENERATION_DELTA = 1;                                    // increment for generation field
+  #define                   GENERATION_CYCLE(x) ( 255 + (1 << x * GENERATION_BITS) ) // cycle length
+  #define                   GENERATION_MASK(x) ( 0x1F << (x * GENERATION_BITS) )     // mask to pull out generation number
 
 public:
  ~TranspositionTable() { aligned_large_pages_free(table); }
