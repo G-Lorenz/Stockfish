@@ -129,14 +129,14 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
   uint8_t previous_depth = 255;
   do {
 	if (cl->entry[i].fields.key21 == guard_key || !cl->entry[i].fields.depth8) {
-	  cl->gen8 = uint16_t((generation8 & GENERATION_MASK(i)) | (cl->gen8 & ~GENERATION_MASK(i))); // Refresh
+	  cl->gen8 = uint16_t((generation8 << (i * GENERATION_BITS)) | (cl->gen8 & ~GENERATION_MASK(i))); // Refresh
 	  found = (bool)cl->entry[i].fields.depth8;
 	  return &cl->entry[i];
     }
 	else {
-      if (cl->entry[i].fields.depth8 - (GENERATION_CYCLE(i) + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS))) < previous_depth) {
+      if (cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS))) < previous_depth) {
 		  replace = &cl->entry[i];
-		  previous_depth = cl->entry[i].fields.depth8 - (GENERATION_CYCLE(i) + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
+		  previous_depth = cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
 	  }
 	}
 	i++;
