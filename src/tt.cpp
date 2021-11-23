@@ -33,27 +33,27 @@ TranspositionTable TT; // Our global transposition table
 /// TTEntry::save() populates the TTEntry with a new node's data, possibly
 /// overwriting an old position. Update is not atomic and can be racy.
 
-void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
+void TranspositionTable::Entry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
 
   uint32_t key21 = (uint32_t)k&0x1FFFFF;
   // Preserve any existing move for the same position
-  if (m || key21 != fields.key21)
-      fields.move16 = (uint16_t)m;
+  if (m || key21 != Cl->entry[address].fields.key21)
+      Cl->entry[address].fields.move16 = (uint16_t)m;
 
   // Overwrite less valuable entries (cheapest checks first)
   if (b == BOUND_EXACT
-      || key21 != fields.key21
-      || d - DEPTH_OFFSET > fields.depth8 - 4)
+      || key21 != Cl->entry[address].fields.key21
+      || d - DEPTH_OFFSET > Cl->entry[address].fields.depth8 - 4)
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
 
-      fields.key21     = key21;
-      fields.depth8    = (uint8_t)(d - DEPTH_OFFSET);
-	  fields.pv        = (uint8_t)pv;
-	  fields.bound     = (uint8_t)b;
-      fields.value16   = (int16_t)v;
-      fields.eval16    = (int16_t)ev;
+      Cl->entry[address].fields.key21     = key21;
+      Cl->entry[address].fields.depth8    = (uint8_t)(d - DEPTH_OFFSET);
+      Cl->entry[address].fields.pv        = (uint8_t)pv;
+      Cl->entry[address].fields.bound     = (uint8_t)b;
+      Cl->entry[address].fields.value16   = (int16_t)v;
+      Cl->entry[address].fields.eval16    = (int16_t)ev;
   }
 }
 
@@ -119,24 +119,30 @@ void TranspositionTable::clear() {
 /// minus 8 times its relative age. TTEntry t1 is considered more valuable than
 /// TTEntry t2 if its replace value is greater than that of t2.
 
-TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
+TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) const {
   uint32_t guard_key = (uint32_t)key & 0x1FFFFF;  // Use the low 21 bits as guard key
-  Cluster* cl = first_entry(key);
+  Entry en;
+  Cluster* cl;
+  en.address = 0;
+  en.Cl = first_entry(key);
+  cl = en.Cl;
   
   int i = 0;
 
-  TTEntry* replace = cl->entry;
+  Entry replace = en;
   uint8_t previous_depth = 255;
   do {
 	if (cl->entry[i].fields.key21 == guard_key || !cl->entry[i].fields.depth8) {
 	  cl->gen8 = uint16_t((generation8 << (i * GENERATION_BITS)) | (cl->gen8 & ~GENERATION_MASK(i))); // Refresh
 	  found = (bool)cl->entry[i].fields.depth8;
-	  return &cl->entry[i];
+          en.address = i;
+	  return en;
     }
 	else {
       if (cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS))) < previous_depth) {
-		  replace = &cl->entry[i];
-		  previous_depth = cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
+                  en.address = i;
+                  replace = en;
+                  previous_depth = cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
 	  }
 	}
 	i++;
@@ -144,7 +150,7 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
   while (i < 3);
   
   found = false;
-  return replace;	
+  return replace;
 }
 
 

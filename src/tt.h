@@ -43,7 +43,6 @@ struct TTEntry {
   Depth depth() const { return (Depth)fields.depth8 + DEPTH_OFFSET; }
   bool is_pv()  const { return (bool)fields.pv; }
   Bound bound() const { return (Bound)fields.bound; }
-  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
@@ -83,9 +82,15 @@ class TranspositionTable {
   static constexpr unsigned GENERATION_MASK(int x) { return 0x1F << (x * GENERATION_BITS); }    // mask to pull out generation number
 
 public:
+  struct Entry {
+    Cluster* Cl;
+    int address;
+    void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
+  };
+
  ~TranspositionTable() { aligned_large_pages_free(table); }
   void new_search() { generation8 += 1; }
-  TTEntry* probe(const Key key, bool& found) const;
+  Entry probe(const Key key, bool& found) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
