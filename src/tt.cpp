@@ -143,11 +143,11 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
     }
     else
     {
-        if (cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS))) < previous_depth)
+        if (cl->entry[i].fields.depth8 - AGE_MULTIPLIER * (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS))) < previous_depth)
         {
             en.address = i;
             replace = en;
-            previous_depth = cl->entry[i].fields.depth8 - (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
+            previous_depth = cl->entry[i].fields.depth8 - AGE_MULTIPLIER * (GENERATION_CYCLE + generation8 - ((cl->gen8 & GENERATION_MASK(i)) >> (i * GENERATION_BITS)));
         }
     }
     i++;
