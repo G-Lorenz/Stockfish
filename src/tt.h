@@ -48,13 +48,13 @@ private:
   friend class TranspositionTable;
 
   struct __attribute__ ((__packed__, gcc_struct)) { //gcc_struct for mingw
-	uint16_t move16;
-	int16_t  value16;
-	int16_t  eval16;
-	uint8_t  depth8;
-	uint8_t  pv:      1;
-	uint8_t  bound:   2;
-	uint32_t key21:  21;
+    uint16_t move16;
+    int16_t  value16;
+    int16_t  eval16;
+    uint8_t  depth8;
+    uint8_t  pv:      1;
+    uint8_t  bound:   2;
+    uint32_t key21:  21;
   } fields;
 };
 
