@@ -54,6 +54,7 @@ void TranspositionTable::Entry::save(Key k, Value v, bool pv, Bound b, Depth d, 
       Cl->entry[address].fields.bound     = (uint8_t)b;
       Cl->entry[address].fields.value16   = (int16_t)v;
       Cl->entry[address].fields.eval16    = (int16_t)ev;
+      Cl->gen8 = uint16_t((TT.generation8 << (address * GENERATION_BITS)) | (Cl->gen8 & ~GENERATION_MASK(address))); // Refresh
   }
 }
 
