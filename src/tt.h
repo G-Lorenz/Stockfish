@@ -43,7 +43,6 @@ struct TTEntry {
   Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
   bool is_pv()  const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
-  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
@@ -69,7 +68,7 @@ class TranspositionTable {
 
   struct Cluster {
     TTEntry entry[ClusterSize];
-    char padding[2]; // Pad to 32 bytes
+    uint8_t padding[2];
   };
 
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
@@ -81,15 +80,77 @@ class TranspositionTable {
   static constexpr int      GENERATION_MASK  = (0xFF << GENERATION_BITS) & 0xFF; // mask to pull out generation number
 
 public:
+  struct Entry {
+    Cluster* Cl;
+	TTEntry* tte;
+    int address;
+	Entry() : Cl(nullptr), tte(nullptr), address(0){
+	}
+
+  Entry(const Entry& en) {
+		Cl = en.Cl;
+		address = en.address;
+		tte = &Cl->entry[address];
+	}
+
+	TTEntry* set_address(int address_)
+	{
+	    address = address_;
+	    tte = &Cl->entry[address];
+	    return tte;
+	}
+
+	bool key_equal(Key k) const {
+		assert(address < 3);
+		if (address < 2)	
+		{
+			// 24bits key
+			uint32_t key = (tte->key16 << 8) | Cl->padding[address];
+			return key == (k & 0xFFFFFF);
+		}
+		else
+		{
+			// 16bits key
+			return tte->key16 == (k & 0xFFFF);
+		}
+	}
+
+	uint32_t get_key() const {
+		return address < 2 ? ((tte->key16 << 8) | Cl->padding[address]) : tte->key16;
+	}
+
+	void set_key(Key key) {
+				
+		assert(address < 3);
+		if (address < 2)
+		{
+			tte->key16 = (key >> 8) & 0xFFFF;
+			Cl->padding[address] = (key & 0xFF);
+		}
+		else
+		{
+			tte->key16 = (key & 0xFFFF);
+		}
+	}
+
+	Entry& operator=(const Entry& en) {
+		Cl = en.Cl;
+		address = en.address;
+		tte = &Cl->entry[address];
+		return *this;
+	}
+    void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
+  };
+
  ~TranspositionTable() { aligned_large_pages_free(table); }
   void new_search() { generation8 += GENERATION_DELTA; } // Lower bits are used for other things
-  TTEntry* probe(const Key key, bool& found) const;
+  Entry probe(const Key key, bool& found) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
 
-  TTEntry* first_entry(const Key key) const {
-    return &table[mul_hi64(key, clusterCount)].entry[0];
+  Cluster* first_entry(const Key key) const {
+    return &table[mul_hi64(key, clusterCount)];
   }
 
 private:

@@ -33,25 +33,25 @@ TranspositionTable TT; // Our global transposition table
 /// TTEntry::save() populates the TTEntry with a new node's data, possibly
 /// overwriting an old position. Update is not atomic and can be racy.
 
-void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
+void TranspositionTable::Entry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev) {
 
   // Preserve any existing move for the same position
-  if (m || (uint16_t)k != key16)
-      move16 = (uint16_t)m;
+  if (m || !key_equal(k))
+  	tte->move16 = (uint16_t)m;
 
   // Overwrite less valuable entries (cheapest checks first)
   if (b == BOUND_EXACT
-      || (uint16_t)k != key16
-      || d - DEPTH_OFFSET > depth8 - 4)
+  	|| !key_equal(k)
+	|| d - DEPTH_OFFSET > tte->depth8 - 4)
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
 
-      key16     = (uint16_t)k;
-      depth8    = (uint8_t)(d - DEPTH_OFFSET);
-      genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
-      value16   = (int16_t)v;
-      eval16    = (int16_t)ev;
+	  set_key(k);
+	  tte->depth8 = (uint8_t)(d - DEPTH_OFFSET);
+	  tte->genBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+	  tte->value16 = (int16_t)v;
+	  tte->eval16 = (int16_t)ev;
   }
 }
 
@@ -117,30 +117,38 @@ void TranspositionTable::clear() {
 /// minus 8 times its relative age. TTEntry t1 is considered more valuable than
 /// TTEntry t2 if its replace value is greater than that of t2.
 
-TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
+TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) const {
 
-  TTEntry* const tte = first_entry(key);
-  const uint16_t key16 = (uint16_t)key;  // Use the low 16 bits as key inside the cluster
+  Entry en;
+  en.Cl = first_entry(key);
 
-  for (int i = 0; i < ClusterSize; ++i)
-      if (tte[i].key16 == key16 || !tte[i].depth8)
+  for(int address = 0; address < 3; ++address)
+  {
+      TTEntry* tte = en.set_address(address);
+
+      if (en.key_equal(key) || !tte->depth8)
       {
-          tte[i].genBound8 = uint8_t(generation8 | (tte[i].genBound8 & (GENERATION_DELTA - 1))); // Refresh
-
-          return found = (bool)tte[i].depth8, &tte[i];
+          tte->genBound8 = uint8_t(generation8 | (tte->genBound8 & (GENERATION_DELTA - 1))); // Refresh
+          return found = (bool)tte->depth8, en;
       }
+  }
 
   // Find an entry to be replaced according to the replacement strategy
-  TTEntry* replace = tte;
-  for (int i = 1; i < ClusterSize; ++i)
+  Entry replace = en;
+  TTEntry* rtte = replace.set_address(0);
+  for (int address = 1; address < 3; ++address)
+  {
+      TTEntry* tte = en.set_address(address);
+
       // Due to our packed storage format for generation and its cyclic
       // nature we add GENERATION_CYCLE (256 is the modulus, plus what
       // is needed to keep the unrelated lowest n bits from affecting
       // the result) to calculate the entry age correctly even after
       // generation8 overflows into the next cycle.
-      if (  replace->depth8 - ((GENERATION_CYCLE + generation8 - replace->genBound8) & GENERATION_MASK)
-          >   tte[i].depth8 - ((GENERATION_CYCLE + generation8 -   tte[i].genBound8) & GENERATION_MASK))
-          replace = &tte[i];
+	  if (  rtte->depth8 - ((GENERATION_CYCLE + generation8 - rtte->genBound8) & GENERATION_MASK)
+		  >  tte->depth8 - ((GENERATION_CYCLE + generation8 -  tte->genBound8) & GENERATION_MASK))
+			replace = en;
+  }
 
   return found = false, replace;
 }
