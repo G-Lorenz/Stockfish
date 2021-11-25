@@ -47,6 +47,7 @@ struct TTEntry {
 private:
   friend class TranspositionTable;
 
+  //Key key64;
   uint16_t key16;
   uint8_t  depth8;
   uint8_t  genBound8;
@@ -68,7 +69,7 @@ class TranspositionTable {
 
   struct Cluster {
     TTEntry entry[ClusterSize];
-    uint8_t padding[2];
+    uint16_t padding;
   };
 
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
@@ -87,12 +88,6 @@ public:
 	Entry() : Cl(nullptr), tte(nullptr), address(0){
 	}
 
-  Entry(const Entry& en) {
-		Cl = en.Cl;
-		address = en.address;
-		tte = &Cl->entry[address];
-	}
-
 	TTEntry* set_address(int address_)
 	{
 	    address = address_;
@@ -102,41 +97,26 @@ public:
 
 	bool key_equal(Key k) const {
 		assert(address < 3);
-		if (address < 2)	
-		{
-			// 24bits key
-			uint32_t key = (tte->key16 << 8) | Cl->padding[address];
-			return key == (k & 0xFFFFFF);
-		}
-		else
-		{
-			// 16bits key
-			return tte->key16 == (k & 0xFFFF);
-		}
-	}
-
-	uint32_t get_key() const {
-		return address < 2 ? ((tte->key16 << 8) | Cl->padding[address]) : tte->key16;
+		uint32_t key20 = tte->key16;
+		key20 <<= 4;
+		key20 |= ((Cl->padding >> (address * 4)) & 0xF);
+		return key20 == (k & 0xFFFFF);
 	}
 
 	void set_key(Key key) {
 				
 		assert(address < 3);
-		if (address < 2)
-		{
-			tte->key16 = (key >> 8) & 0xFFFF;
-			Cl->padding[address] = (key & 0xFF);
-		}
-		else
-		{
-			tte->key16 = (key & 0xFFFF);
-		}
+		tte->key16 = (key >> 4) & 0xFFFF;
+		
+		uint16_t mask = (0xF) << (address * 4);
+		Cl->padding &= ~mask;
+		Cl->padding |= ((key & 0xF) << (address * 4));
 	}
 
 	Entry& operator=(const Entry& en) {
 		Cl = en.Cl;
 		address = en.address;
-		tte = &Cl->entry[address];
+		tte = en.tte;
 		return *this;
 	}
     void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);

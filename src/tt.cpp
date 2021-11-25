@@ -41,8 +41,8 @@ void TranspositionTable::Entry::save(Key k, Value v, bool pv, Bound b, Depth d, 
 
   // Overwrite less valuable entries (cheapest checks first)
   if (b == BOUND_EXACT
-  	|| !key_equal(k)
-	|| d - DEPTH_OFFSET > tte->depth8 - 4)
+      || d - DEPTH_OFFSET > tte->depth8 - 4
+  	  || !key_equal(k))
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
@@ -119,36 +119,40 @@ void TranspositionTable::clear() {
 
 TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) const {
 
-  Entry en;
-  en.Cl = first_entry(key);
+    Entry en;
+	en.Cl = first_entry(key);
 
-  for(int address = 0; address < 3; ++address)
-  {
-      TTEntry* tte = en.set_address(address);
+    //dbg_hit_on(false);
+	for(int address = 0; address < 3; ++address)
+	{
+		TTEntry* tte = en.set_address(address);
 
-      if (en.key_equal(key) || !tte->depth8)
-      {
-          tte->genBound8 = uint8_t(generation8 | (tte->genBound8 & (GENERATION_DELTA - 1))); // Refresh
-          return found = (bool)tte->depth8, en;
-      }
-  }
+		if (!tte->depth8 || en.key_equal(key))
+		{
+			tte->genBound8 = uint8_t(generation8 | (tte->genBound8 & (GENERATION_DELTA - 1))); // Refresh
+			found = (bool)tte->depth8;
+            /*if (found)
+                dbg_hit_on(true);*/
+			return en;
+		}
+	}
 
   // Find an entry to be replaced according to the replacement strategy
   Entry replace = en;
   TTEntry* rtte = replace.set_address(0);
   for (int address = 1; address < 3; ++address)
   {
-      TTEntry* tte = en.set_address(address);
+  	TTEntry* tte = en.set_address(address);
 
       // Due to our packed storage format for generation and its cyclic
       // nature we add GENERATION_CYCLE (256 is the modulus, plus what
       // is needed to keep the unrelated lowest n bits from affecting
       // the result) to calculate the entry age correctly even after
       // generation8 overflows into the next cycle.
-	  if (  rtte->depth8 - ((GENERATION_CYCLE + generation8 - rtte->genBound8) & GENERATION_MASK)
-		  >  tte->depth8 - ((GENERATION_CYCLE + generation8 -  tte->genBound8) & GENERATION_MASK))
+	  if (rtte->depth8 - ((GENERATION_CYCLE + generation8 - rtte->genBound8) & GENERATION_MASK)
+		> tte->depth8 - ((GENERATION_CYCLE + generation8 - tte->genBound8) & GENERATION_MASK))
 			replace = en;
-  }
+		}
 
   return found = false, replace;
 }
