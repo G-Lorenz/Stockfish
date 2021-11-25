@@ -83,42 +83,9 @@ class TranspositionTable {
 public:
   struct Entry {
     Cluster* Cl;
-	TTEntry* tte;
     int address;
-	Entry() : Cl(nullptr), tte(nullptr), address(0){
-	}
-
-	TTEntry* set_address(int address_)
-	{
-	    address = address_;
-	    tte = &Cl->entry[address];
-	    return tte;
-	}
-
-	bool key_equal(Key k) const {
-		assert(address < 3);
-		uint32_t key20 = tte->key16;
-		key20 <<= 4;
-		key20 |= ((Cl->padding >> (address * 4)) & 0xF);
-		return key20 == (k & 0xFFFFF);
-	}
-
-	void set_key(Key key) {
-				
-		assert(address < 3);
-		tte->key16 = (key >> 4) & 0xFFFF;
-		
-		uint16_t mask = (0xF) << (address * 4);
-		Cl->padding &= ~mask;
-		Cl->padding |= ((key & 0xF) << (address * 4));
-	}
-
-	Entry& operator=(const Entry& en) {
-		Cl = en.Cl;
-		address = en.address;
-		tte = en.tte;
-		return *this;
-	}
+    bool key_equal(Key k) const;
+    void set_key(Key key);
     void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
   };
 
@@ -140,6 +107,22 @@ private:
   Cluster* table;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
 };
+
+inline bool TranspositionTable::Entry::key_equal(Key k) const {
+  assert(address < 3);
+  uint32_t key20 = Cl->entry[address].key16;
+  key20 <<= 4;
+  key20 |= ((Cl->padding >> (address * 4)) & 0xF);
+  return key20 == (k & 0xFFFFF);
+}
+
+inline void TranspositionTable::Entry::set_key(Key key) {
+  assert(address < 3);
+  Cl->entry[address].key16 = (key >> 4) & 0xFFFF;
+  uint16_t mask = (0xF) << (address * 4);
+  Cl->padding &= ~mask;
+  Cl->padding |= ((key & 0xF) << (address * 4));
+}
 
 extern TranspositionTable TT;
 
