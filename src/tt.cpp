@@ -122,6 +122,8 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
 
   Entry en;
   en.Cl = first_entry(key);
+  Entry replace = en;
+  int replace_depth = 255;
   //dbg_hit_on(false);
   for(int address = 0; address < 3; ++address)
   {
@@ -135,15 +137,10 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
                 dbg_hit_on(true);*/
           return en;
       }
-}
 
   // Find an entry to be replaced according to the replacement strategy
-  Entry replace = en;
-  int replace_depth = 255;
-  for (int address = 1; address < 3; ++address)
-  {
-      TTEntry* tte = &(en.Cl->entry[address]);
-      en.address = address;
+      else
+      {
       // Due to our packed storage format for generation and its cyclic
       // nature we add GENERATION_CYCLE (256 is the modulus, plus what
       // is needed to keep the unrelated lowest n bits from affecting
@@ -155,6 +152,7 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
               replace = en;
               replace_depth = tte->depth8 - ((GENERATION_CYCLE + generation8 - tte->genBound8) & GENERATION_MASK);
           }
+      }
   }
   return found = false, replace;
 }
