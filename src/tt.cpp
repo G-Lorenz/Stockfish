@@ -122,15 +122,15 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
 
   Entry en;
   en.Cl = first_entry(key);
+  TTEntry* const tte = en.Cl->entry;
   //dbg_hit_on(false);
   for(int address = 0; address < 3; ++address)
   {
-      TTEntry* tte = &(en.Cl->entry[address]);
-      en.address = address;
-      if (!tte->depth8 || en.key_equal(key))
+      if (!tte[address].depth8 || en.key_equal(key))
       {
-          tte->genBound8 = uint8_t(generation8 | (tte->genBound8 & (GENERATION_DELTA - 1))); // Refresh
-          found = (bool)tte->depth8;
+          tte[address].genBound8 = uint8_t(generation8 | (tte[address].genBound8 & (GENERATION_DELTA - 1))); // Refresh
+          found = (bool)tte[address].depth8;
+          en.address = address;
           /*if (found)
                 dbg_hit_on(true);*/
           return en;
@@ -139,21 +139,19 @@ TranspositionTable::Entry TranspositionTable::probe(const Key key, bool& found) 
 
   // Find an entry to be replaced according to the replacement strategy
   Entry replace = en;
-  int replace_depth = 255;
+  TTEntry* rtte = tte;
   for (int address = 1; address < 3; ++address)
   {
-      TTEntry* tte = &(en.Cl->entry[address]);
-      en.address = address;
       // Due to our packed storage format for generation and its cyclic
       // nature we add GENERATION_CYCLE (256 is the modulus, plus what
       // is needed to keep the unrelated lowest n bits from affecting
       // the result) to calculate the entry age correctly even after
       // generation8 overflows into the next cycle.
-	  if (  replace_depth
-              > tte->depth8 - ((GENERATION_CYCLE + generation8 - tte->genBound8) & GENERATION_MASK))
+	  if (  rtte[address].depth8 - ((GENERATION_CYCLE + generation8 - rtte[address].genBound8) & GENERATION_MASK)
+              > tte[address].depth8 - ((GENERATION_CYCLE + generation8 - tte[address].genBound8) & GENERATION_MASK))
           {
               replace = en;
-              replace_depth = tte->depth8 - ((GENERATION_CYCLE + generation8 - tte->genBound8) & GENERATION_MASK);
+	      replace.address = address;
           }
   }
   return found = false, replace;
