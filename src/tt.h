@@ -87,7 +87,9 @@ public:
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
-  TTEntry sentinel() { s.move16 = MOVE_NONE; return s; }
+  TTEntry sentinel() { s.move16  = MOVE_NONE;
+                       s.value16 = VALUE_NONE;
+                       return s; }
 
   TTEntry* first_entry(const Key key) const {
     return &table[mul_hi64(key, clusterCount)].entry[0];
