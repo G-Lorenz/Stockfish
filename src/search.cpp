@@ -592,7 +592,7 @@ namespace {
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
     bool givesCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
-         ttCapture, singularQuietLMR;
+         ttCapture, singularQuietLMR, ttePv;
     Piece movedPiece;
     int moveCount, captureCount, quietCount, bestMoveCount, improvement;
 
@@ -665,8 +665,9 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    ttePv = ss->ttHit && tte->is_pv();
     if (!excludedMove)
-        ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
+        ss->ttPv = PvNode || ttePv;
 
     // Update low ply history for previous move if we are near root and position is or has been in PV
     if (   ss->ttPv
@@ -1089,7 +1090,7 @@ moves_loop: // When in check, search starts here
       // a reduced search on all the other moves but the ttMove and if the
       // result is lower than ttValue minus a margin, then we will extend the ttMove.
       if (   !rootNode
-          &&  depth >= 6 + 2 * (PvNode && tte->is_pv())
+          &&  depth >= 6 + 2 * (PvNode && ttePv)
           &&  move == ttMove
           && !excludedMove // Avoid recursive singular search
        /* &&  ttValue != VALUE_NONE Already implicit in the next condition */
