@@ -1471,10 +1471,10 @@ moves_loop: // When in check, search starts here
     // Transposition table lookup
     posKey = pos.key();
     ttePtr = TT.probe(posKey, ss->ttHit);
-    tte = *ttePtr;
-    ttValue = ss->ttHit ? value_from_tt(tte.value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ttMove = ss->ttHit ? tte.move() : MOVE_NONE;
-    pvHit = ss->ttHit && tte.is_pv();
+    tte = ss->ttHit ? *ttePtr : TT.sentinel();
+    ttValue = value_from_tt(tte.value(), ss->ply, pos.rule50_count());
+    ttMove = tte.move();
+    pvHit = tte.is_pv();
 
     if (  !PvNode
         && ss->ttHit
