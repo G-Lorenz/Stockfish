@@ -662,7 +662,7 @@ namespace {
     excludedMove = ss->excludedMove;
     posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     ttePtr = TT.probe(posKey, ss->ttHit);
-    tte = ss->ttHit ? *ttePtr : TT.sentinel();
+    tte = ss->ttHit ? *ttePtr : TT.sentinel;
     ttValue = value_from_tt(tte.value(), ss->ply, pos.rule50_count());
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : tte.move();
@@ -1471,7 +1471,7 @@ moves_loop: // When in check, search starts here
     // Transposition table lookup
     posKey = pos.key();
     ttePtr = TT.probe(posKey, ss->ttHit);
-    tte = ss->ttHit ? *ttePtr : TT.sentinel();
+    tte = ss->ttHit ? *ttePtr : TT.sentinel;
     ttValue = value_from_tt(tte.value(), ss->ply, pos.rule50_count());
     ttMove = tte.move();
     pvHit = tte.is_pv();

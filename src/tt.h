@@ -82,14 +82,12 @@ class TranspositionTable {
 
 public:
  ~TranspositionTable() { aligned_large_pages_free(table); }
-  void new_search() { generation8 += GENERATION_DELTA; } // Lower bits are used for other things
+  void new_search() { generation8 += GENERATION_DELTA; set_sentinel(); } // Lower bits are used for other things
   TTEntry* probe(const Key key, bool& found) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
-  TTEntry sentinel() { s.move16  = MOVE_NONE;
-                       s.value16 = VALUE_NONE;
-                       return s; }
+  TTEntry sentinel;
 
   TTEntry* first_entry(const Key key) const {
     return &table[mul_hi64(key, clusterCount)].entry[0];
@@ -100,8 +98,10 @@ private:
 
   size_t clusterCount;
   Cluster* table;
-  TTEntry s;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
+  void set_sentinel() { sentinel.move16    = MOVE_NONE;
+                        sentinel.value16   = VALUE_NONE;
+		        sentinel.genBound8 = BOUND_NONE; }
 };
 
 extern TranspositionTable TT;
