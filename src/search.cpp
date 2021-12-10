@@ -663,12 +663,12 @@ namespace {
     posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     ttePtr = TT.probe(posKey, ss->ttHit);
     tte = ss->ttHit ? *ttePtr : TT.sentinel();
-    ttValue = ss->ttHit ? value_from_tt(tte.value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+    ttValue = value_from_tt(tte.value(), ss->ply, pos.rule50_count());
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
-            : ss->ttHit    ? tte.move() : MOVE_NONE;
+            : tte.move();
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     if (!excludedMove)
-        ss->ttPv = PvNode || (ss->ttHit && tte.is_pv());
+        ss->ttPv = PvNode || tte.is_pv();
 
     // Update low ply history for previous move if we are near root and position is or has been in PV
     if (   ss->ttPv
