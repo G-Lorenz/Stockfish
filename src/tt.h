@@ -87,6 +87,7 @@ public:
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
+  TTEntry sentinel() { s.move16 = MOVE_NONE; return s; }
 
   TTEntry* first_entry(const Key key) const {
     return &table[mul_hi64(key, clusterCount)].entry[0];
@@ -97,6 +98,7 @@ private:
 
   size_t clusterCount;
   Cluster* table;
+  TTEntry s;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
 };
 
