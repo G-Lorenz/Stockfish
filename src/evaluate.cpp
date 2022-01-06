@@ -1049,48 +1049,52 @@ make_v:
 
     constexpr Bitboard Corners =  1ULL << SQ_A1 | 1ULL << SQ_H1 | 1ULL << SQ_A8 | 1ULL << SQ_H8;
 
-    if (!((pos.pieces(BISHOP) || pos.pieces(KNIGHT)) & Corners))
-        return VALUE_ZERO;
-
     int correction = 0;
 
-    // Cornered bishops
-    if (   pos.piece_on(SQ_A1) == W_BISHOP
-        && pos.piece_on(SQ_B2) == W_PAWN)
-        correction -= CorneredBishop;
+    if (pos.pieces(BISHOP) & Corners)
+    {
+        // Cornered bishops
+        if (   pos.piece_on(SQ_A1) == W_BISHOP
+            && pos.piece_on(SQ_B2) == W_PAWN)
+            correction -= CorneredBishop;
 
-    if (   pos.piece_on(SQ_H1) == W_BISHOP
-        && pos.piece_on(SQ_G2) == W_PAWN)
-        correction -= CorneredBishop;
+        if (   pos.piece_on(SQ_H1) == W_BISHOP
+            && pos.piece_on(SQ_G2) == W_PAWN)
+            correction -= CorneredBishop;
 
-    if (   pos.piece_on(SQ_A8) == B_BISHOP
-        && pos.piece_on(SQ_B7) == B_PAWN)
-        correction += CorneredBishop;
+        if (   pos.piece_on(SQ_A8) == B_BISHOP
+            && pos.piece_on(SQ_B7) == B_PAWN)
+            correction += CorneredBishop;
 
-    if (   pos.piece_on(SQ_H8) == B_BISHOP
-        && pos.piece_on(SQ_G7) == B_PAWN)
-        correction += CorneredBishop;
+        if (   pos.piece_on(SQ_H8) == B_BISHOP
+            && pos.piece_on(SQ_G7) == B_PAWN)
+            correction += CorneredBishop;
+    }
+    else if (pos.pieces(KNIGHT) & Corners)
+    {
+        // Cornered knights
+        if (   pos.piece_on(SQ_A1) == W_KNIGHT
+            && pos.piece_on(SQ_B3) == W_PAWN
+            && pos.piece_on(SQ_C2) == W_PAWN)
+            correction -= CorneredKnight;
 
-    // Cornered knights
-    if (   pos.piece_on(SQ_A1) == W_KNIGHT
-        && pos.piece_on(SQ_B3) == W_PAWN
-        && pos.piece_on(SQ_C2) == W_PAWN)
-        correction -= CorneredKnight;
+        if (   pos.piece_on(SQ_H1) == W_KNIGHT
+            && pos.piece_on(SQ_G3) == W_PAWN
+            && pos.piece_on(SQ_F2) == W_PAWN)
+            correction -= CorneredKnight;
 
-    if (   pos.piece_on(SQ_H1) == W_KNIGHT
-        && pos.piece_on(SQ_G3) == W_PAWN
-        && pos.piece_on(SQ_F2) == W_PAWN)
-        correction -= CorneredKnight;
+        if (   pos.piece_on(SQ_A8) == B_KNIGHT
+            && pos.piece_on(SQ_B6) == B_PAWN
+            && pos.piece_on(SQ_C7) == B_PAWN)
+            correction += CorneredKnight;
 
-    if (   pos.piece_on(SQ_A8) == B_KNIGHT
-        && pos.piece_on(SQ_B6) == B_PAWN
-        && pos.piece_on(SQ_C7) == B_PAWN)
-        correction += CorneredKnight;
-
-    if (   pos.piece_on(SQ_H8) == B_KNIGHT
-        && pos.piece_on(SQ_G6) == B_PAWN
-        && pos.piece_on(SQ_F7) == B_PAWN)
-        correction += CorneredKnight;
+        if (   pos.piece_on(SQ_H8) == B_KNIGHT
+            && pos.piece_on(SQ_G6) == B_PAWN
+            && pos.piece_on(SQ_F7) == B_PAWN)
+            correction += CorneredKnight;
+    }
+    else
+        return VALUE_ZERO;
 
     return pos.side_to_move() == WHITE ?  Value(5 * correction)
                                        : -Value(5 * correction);
