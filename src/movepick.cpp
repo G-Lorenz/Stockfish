@@ -107,8 +107,8 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if (Type == CAPTURES || pos.capture(m))
-          m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                   - Value(type_of(pos.moved_piece(m)));
+          m.value =  5 * PieceValue[MG][pos.piece_on(to_sq(m))]
+                   - 4 * Value(type_of(pos.moved_piece(m)));
 
       else
           m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
