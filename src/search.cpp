@@ -640,22 +640,8 @@ namespace {
         if (ttMove)
         {
             if (ttValue >= beta)
-            {
-                // Bonus for a quiet ttMove that fails high (~3 Elo)
-                if (!ttCapture)
-                    update_quiet_stats(pos, ss, ttMove, stat_bonus(depth));
-
-                // Extra penalty for early quiet moves of the previous ply (~0 Elo)
-                if ((ss-1)->moveCount <= 2 && !priorCapture)
-                    update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(depth + 1));
-            }
-            // Penalty for a quiet ttMove that fails low (~1 Elo)
-            else if (!ttCapture)
-            {
-                int penalty = -stat_bonus(depth);
-                thisThread->mainHistory[us][from_to(ttMove)] << penalty;
-                update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
-            }
+                update_all_stats(pos, ss, ttMove, ttValue, beta, prevSq,
+                                 NULL, 0, NULL, 0, depth);
         }
 
         // Partial workaround for the graph history interaction problem
