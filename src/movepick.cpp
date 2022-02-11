@@ -93,8 +93,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, const CapturePiece
   assert(!pos.checkers());
 
   stage = PROBCUT_TT + !(ttm && pos.capture(ttm)
-                             && pos.pseudo_legal(ttm)
-                             && pos.see_ge(ttm, threshold));
+                             && pos.pseudo_legal(ttm));
 }
 
 /// MovePicker::score() assigns a numerical value to each move in a list, used
@@ -241,7 +240,12 @@ top:
       return select<Best>([](){ return true; });
 
   case PROBCUT:
-      return select<Best>([&](){ return pos.see_ge(*cur, threshold); });
+      if (pos.see_ge(*cur, threshold))
+          return select<Best>([&](){ return true; });
+      else
+          ++stage;
+
+      [[fallthrough]];
 
   case QCAPTURE:
       if (select<Best>([&](){ return   depth > DEPTH_QS_RECAPTURES
