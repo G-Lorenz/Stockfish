@@ -22,6 +22,9 @@
 
 namespace Stockfish {
 
+int MPSC1=192, MPSC2=32, MPSQ1=32, MPSQ2=64, MPSQ3=32, MPSQ4=32, MPSQ5=32, MPSE1=32, MPSE2=32, MPSE3=32, MPSE4=64, GC1=69, QI1=3000;
+TUNE(SetRange(0, 320), MPSC1, MPSC2, MPSQ1, MPSQ2, MPSQ3, MPSQ4, MPSQ5, MPSE1, MPSE2, MPSE3, MPSE4);
+TUNE(GC1, QI1);
 namespace {
 
   enum Stages {
@@ -107,24 +110,24 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
-          m.value =  int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
-                   + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+          m.value =  MPSC1 * PieceValue[MG][pos.piece_on(to_sq(m))] / 32
+                   + MPSC2 * (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))] / 32;
 
       else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)];
+          m.value =  MPSQ1 * (*mainHistory)[pos.side_to_move()][from_to(m)] / 32
+                   + MPSQ2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 32
+                   + MPSQ3 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)] / 32
+                   + MPSQ4 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)] / 32
+                   + MPSQ5 * (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)] / 32;
 
       else // Type == EVASIONS
       {
           if (pos.capture(m))
-              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
+              m.value =  MPSE1 * PieceValue[MG][pos.piece_on(to_sq(m))] / 32
+                       - MPSE2 * Value(type_of(pos.moved_piece(m))) / 32;
           else
-              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+              m.value =  MPSE3 * (*mainHistory)[pos.side_to_move()][from_to(m)] / 32
+                       + MPSE4 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)] / 32
                        - (1 << 28);
       }
 }
@@ -174,7 +177,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                       return pos.see_ge(*cur, Value(-GC1 * cur->value / 1024)) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
@@ -206,7 +209,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves, -QI1 * depth);
       }
 
       ++stage;
