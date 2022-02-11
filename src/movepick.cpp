@@ -240,11 +240,10 @@ top:
       return select<Best>([](){ return true; });
 
   case PROBCUT:
-      if (pos.see_ge(*cur, threshold))
-          return select<Best>([&](){ return true; });
-      else
-          ++stage;
+      if (select<Best>([&](){ return pos.see_ge(*cur, threshold); }))
+          return *(cur - 1);
 
+      ++stage;
       [[fallthrough]];
 
   case QCAPTURE:
