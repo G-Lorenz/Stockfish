@@ -107,25 +107,25 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
-          m.value =  int(PieceValue[MG][pos.piece_on(to_sq(m))]) * 6
-                   + (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+          m.value = ( 208 * PieceValue[MG][pos.piece_on(to_sq(m))]
+                     + 67 * (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))]) / 32;
 
       else if constexpr (Type == QUIETS)
-          m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)];
+          m.value = (  52 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                     + 83 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+                     + 36 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                     + 29 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                     + 49 * (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]) / 32;
 
       else // Type == EVASIONS
       {
           if (pos.capture(m))
-              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
+              m.value =  (   35 * PieceValue[MG][pos.piece_on(to_sq(m))]
+                          -  27 * Value(type_of(pos.moved_piece(m)))) / 32;
           else
-              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       - (1 << 28);
+              m.value =  (  29 * (*mainHistory)[pos.side_to_move()][from_to(m)]
+                          + 56 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]) / 32
+                          - (1 << 28);
       }
 }
 
@@ -174,7 +174,7 @@ top:
 
   case GOOD_CAPTURE:
       if (select<Best>([&](){
-                       return pos.see_ge(*cur, Value(-69 * cur->value / 1024)) ?
+                       return pos.see_ge(*cur, Value(-65 * cur->value / 1024)) ?
                               // Move losing capture to endBadCaptures to be tried later
                               true : (*endBadCaptures++ = *cur, false); }))
           return *(cur - 1);
@@ -206,7 +206,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves, -3388 * depth);
       }
 
       ++stage;
