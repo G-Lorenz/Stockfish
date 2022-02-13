@@ -901,8 +901,9 @@ namespace {
                             BOUND_LOWER,
                             depth - 3, move, ss->staticEval);
 
-                    update_all_stats(pos, ss, move, value, probCutBeta, to_sq(move),
-                                     quietsSearched, quietCount, capturesSearched, captureCount, depth - 3);
+                    Piece moved_piece = pos.moved_piece(move);
+                    PieceType captured = type_of(pos.piece_on(to_sq(move)));
+                    captureHistory[moved_piece][to_sq(move)][captured] << stat_bonus(depth - 2);
                     return value;
                 }
             }
