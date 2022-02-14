@@ -874,12 +874,6 @@ namespace {
 
                 captureOrPromotion = true;
 
-                ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
-                                                                          [captureOrPromotion]
-                                                                          [pos.moved_piece(move)]
-                                                                          [to_sq(move)];
-
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
@@ -900,6 +894,12 @@ namespace {
                         tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
                             BOUND_LOWER,
                             depth - 3, move, ss->staticEval);
+
+                    ss->currentMove = move;
+                    ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
+                                                                              [captureOrPromotion]
+                                                                              [pos.moved_piece(move)]
+                                                                              [to_sq(move)];
                     return value;
                 }
             }
