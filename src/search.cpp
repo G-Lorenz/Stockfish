@@ -900,6 +900,10 @@ namespace {
                         tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
                             BOUND_LOWER,
                             depth - 3, move, ss->staticEval);
+
+                    Move prevMove = (ss-1)->currentMove;
+                    (*(ss-1)->continuationHistory)[pos.moved_piece(prevMove)][to_sq(prevMove)] << -stat_bonus(depth - 2);
+                    (*ss->continuationHistory)[pos.moved_piece(move)][to_sq(move)] << stat_bonus(depth - 2);
                     return value;
                 }
             }
