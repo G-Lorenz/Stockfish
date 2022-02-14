@@ -900,6 +900,11 @@ namespace {
                         tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
                             BOUND_LOWER,
                             depth - 3, move, ss->staticEval);
+
+                    // decrease stats of prev move if pruned
+                    Move prevMove = (ss-1)->currentMove;
+                    if (!pos.capture_or_promotion(prevMove))
+                        update_quiet_stats(pos, ss-1, prevMove, -stat_bonus(depth - 3));
                     return value;
                 }
             }
