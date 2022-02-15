@@ -792,7 +792,11 @@ namespace {
         &&  eval - futility_margin(depth, improving) - (ss-1)->statScore / 256 >= beta
         &&  eval >= beta
         &&  eval < 22266) // larger than VALUE_KNOWN_WIN, but smaller than TB wins.
+    {
+        Move prevMove = (ss-1)->currentMove;
+        (*(ss-1)->continuationHistory)[pos.moved_piece(prevMove)][to_sq(prevMove)] << -stat_bonus(depth);
         return eval;
+    }
 
     // Step 9. Null move search with verification search (~22 Elo)
     if (   !PvNode
