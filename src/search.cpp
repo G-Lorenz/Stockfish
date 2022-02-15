@@ -793,8 +793,11 @@ namespace {
         &&  eval >= beta
         &&  eval < 22266) // larger than VALUE_KNOWN_WIN, but smaller than TB wins.
     {
-        Move prevMove = (ss-1)->currentMove;
-        (*(ss-1)->continuationHistory)[pos.moved_piece(prevMove)][to_sq(prevMove)] << -stat_bonus(depth);
+        if ((ss-1)->moveCount <= 2 && !priorCapture)
+        {
+            Move prevMove = (ss-1)->currentMove;
+            update_continuation_histories(ss-1, pos.moved_piece(prevMove), to_sq(prevMove), -stat_bonus(depth));
+        }
         return eval;
     }
 
