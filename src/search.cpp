@@ -1432,7 +1432,10 @@ moves_loop: // When in check, search starts here
         && ttValue != VALUE_NONE // Only in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
+    {
+        update_all_stats(pos, ss, ttMove, ttValue, beta, to_sq(ttMove), NULL, 0, NULL, 0, tte->depth());
         return ttValue;
+    }
 
     // Evaluate the position statically
     if (ss->inCheck)
