@@ -1467,6 +1467,9 @@ moves_loop: // When in check, search starts here
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                           DEPTH_NONE, MOVE_NONE, ss->staticEval);
 
+            else if (tte->depth() > 0)
+                     update_all_stats(pos, ss, ttMove, bestValue, beta, to_sq(ttMove), NULL, 0, NULL, 0, tte->depth());
+
             return bestValue;
         }
 
