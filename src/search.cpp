@@ -1433,7 +1433,7 @@ moves_loop: // When in check, search starts here
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
     {
-        if (tte->depth() >= 0)
+        if (tte->depth() >= 0 && ttValue >= beta)
             update_all_stats(pos, ss, ttMove, ttValue, beta, to_sq(ttMove), NULL, 0, NULL, 0, tte->depth());
         return ttValue;
     }
