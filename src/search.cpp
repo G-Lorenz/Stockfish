@@ -1479,6 +1479,7 @@ moves_loop: // When in check, search starts here
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
                                           nullptr                   , (ss-4)->continuationHistory,
                                           nullptr                   , (ss-6)->continuationHistory };
+    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
@@ -1486,7 +1487,7 @@ moves_loop: // When in check, search starts here
     // will be generated.
     Square prevSq = to_sq((ss-1)->currentMove);
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->captureHistory,
+                                      &captureHistory,
                                       contHist,
                                       prevSq);
 
@@ -1577,6 +1578,13 @@ moves_loop: // When in check, search starts here
           if (value > alpha)
           {
               bestMove = move;
+
+              if (captureOrPromotion)
+              {
+                  Piece moved_piece = pos.moved_piece(bestMove);
+                  PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
+                  captureHistory[moved_piece][to_sq(bestMove)][captured] << stat_bonus(1);
+              }
 
               if (PvNode) // Update pv even in fail-high case
                   update_pv(ss->pv, move, (ss+1)->pv);
