@@ -1391,9 +1391,10 @@ moves_loop: // When in check, search starts here
     TTEntry* tte;
     Key posKey;
     Move ttMove, move, bestMove;
+    Square prevSq;
     Depth ttDepth;
     Value bestValue, value, ttValue, futilityValue, futilityBase;
-    bool pvHit, givesCheck, captureOrPromotion;
+    bool pvHit, givesCheck, captureOrPromotion, ttCapture;
     int moveCount;
 
     if (PvNode)
@@ -1424,7 +1425,9 @@ moves_loop: // When in check, search starts here
     tte = TT.probe(posKey, ss->ttHit);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
+    ttCapture = ttMove && pos.capture_or_promotion(ttMove);
     pvHit = ss->ttHit && tte->is_pv();
+    prevSq = to_sq((ss-1)->currentMove);
 
     if (  !PvNode
         && ss->ttHit
@@ -1432,7 +1435,30 @@ moves_loop: // When in check, search starts here
         && ttValue != VALUE_NONE // Only in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
                             : (tte->bound() & BOUND_UPPER)))
+    {
+        // If ttMove is quiet, update move sorting heuristics on TT hit (~1 Elo)
+        if (ttMove)
+        {
+            if (ttValue >= beta)
+            {
+                // Bonus for a quiet ttMove that fails high (~3 Elo)
+                if (!ttCapture)
+                    update_quiet_stats(pos, ss, ttMove, stat_bonus(tte->depth()));
+
+                // Extra penalty for early quiet moves of the previous ply (~0 Elo)
+                if ((ss-1)->moveCount <= 2 && !pos.captured_piece())
+                    update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, -stat_bonus(tte->depth() + 1));
+            }
+            // Penalty for a quiet ttMove that fails low (~1 Elo)
+            else if (!ttCapture)
+            {
+                int penalty = -stat_bonus(tte->depth());
+                thisThread->mainHistory[pos.side_to_move()][from_to(ttMove)] << penalty;
+                update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
+            }
+        }
         return ttValue;
+    }
 
     // Evaluate the position statically
     if (ss->inCheck)
@@ -1484,7 +1510,6 @@ moves_loop: // When in check, search starts here
     // to search the moves. Because the depth is <= 0 here, only captures,
     // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
-    Square prevSq = to_sq((ss-1)->currentMove);
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
