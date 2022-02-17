@@ -1437,7 +1437,7 @@ moves_loop: // When in check, search starts here
                             : (tte->bound() & BOUND_UPPER)))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit (~1 Elo)
-        if (ttMove)
+        if (ttMove && tte->depth() > 0)
         {
             if (ttValue >= beta)
             {
