@@ -1599,8 +1599,11 @@ moves_loop: // When in check, search starts here
     }
 
     if (bestMove && ss->depth <= 0)
-        update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
-                         NULL, 0, NULL, 0, 2);
+    {
+        Piece moved_piece = pos.moved_piece(bestMove);
+        PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
+        thisThread->captureHistory[moved_piece][to_sq(bestMove)][captured] << stat_bonus(3);
+    }
     // Save gathered info in transposition table
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
