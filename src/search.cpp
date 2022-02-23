@@ -120,6 +120,7 @@ namespace {
   void update_quiet_stats(const Position& pos, Stack* ss, Move move, int bonus);
   void update_all_stats(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Square prevSq,
                         Move* quietsSearched, int quietCount, Move* capturesSearched, int captureCount, Depth depth);
+  void update_all_stats_qs(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Depth depth);
 
   // perft() is our utility to verify move generation. All the leaf nodes up
   // to the given depth are generated and counted, and the sum is returned.
@@ -1599,8 +1600,7 @@ moves_loop: // When in check, search starts here
     }
 
     if (bestMove && ss->depth <= 0)
-        update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
-                         NULL, 0, NULL, 0, 2);
+        update_all_stats_qs(pos, ss, bestMove, bestValue, beta, 2);
     // Save gathered info in transposition table
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
@@ -1713,6 +1713,25 @@ moves_loop: // When in check, search starts here
     }
   }
 
+  // qs_update_all_stats() updates stats at the end of qsearch() when a bestMove is found
+
+  void update_all_stats_qs(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Depth depth) {
+
+    int bonus1, bonus2;
+    Thread* thisThread = pos.this_thread();
+    CapturePieceToHistory& captureHistory = thisThread->captureHistory;
+    Piece moved_piece = pos.moved_piece(bestMove);
+    PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
+
+    bonus1 = stat_bonus(depth + 1);
+    bonus2 = bestValue > beta + PawnValueMg ? bonus1               // larger bonus
+                                            : stat_bonus(depth);   // smaller bonus
+
+    if (!pos.capture_or_promotion(bestMove))
+        update_quiet_stats(pos, ss, bestMove, bonus2);
+    else
+        captureHistory[moved_piece][to_sq(bestMove)][captured] << bonus1;
+  }
 
   // update_continuation_histories() updates histories of the move pairs formed
   // by moves at ply -1, -2, -4, and -6 with current move.
