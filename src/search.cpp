@@ -1600,7 +1600,8 @@ moves_loop: // When in check, search starts here
     }
 
     if (bestMove && ss->depth <= 0)
-        update_all_stats_qs(pos, ss, bestMove, bestValue, beta, 2);
+        update_all_stats_qs(pos, ss, bestMove, bestValue, beta,
+                            depth > -4 ? depth : -3);
     // Save gathered info in transposition table
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
@@ -1713,7 +1714,7 @@ moves_loop: // When in check, search starts here
     }
   }
 
-  // qs_update_all_stats() updates stats at the end of qsearch() when a bestMove is found
+  // update_all_stats_qs() updates stats at the end of qsearch() when a bestMove is found
 
   void update_all_stats_qs(const Position& pos, Stack* ss, Move bestMove, Value bestValue, Value beta, Depth depth) {
 
@@ -1723,9 +1724,9 @@ moves_loop: // When in check, search starts here
     Piece moved_piece = pos.moved_piece(bestMove);
     PieceType captured = type_of(pos.piece_on(to_sq(bestMove)));
 
-    bonus1 = stat_bonus(depth + 1);
-    bonus2 = bestValue > beta + PawnValueMg ? bonus1               // larger bonus
-                                            : stat_bonus(depth);   // smaller bonus
+    bonus1 = stat_bonus(depth + 6) / 8;
+    bonus2 = bestValue > beta + PawnValueMg ? bonus1                       // larger bonus
+                                            : stat_bonus(depth + 5) / 8;   // smaller bonus
 
     if (!pos.capture_or_promotion(bestMove))
         update_quiet_stats(pos, ss, bestMove, bonus2);
