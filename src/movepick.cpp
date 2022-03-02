@@ -21,8 +21,10 @@
 #include "movepick.h"
 
 namespace Stockfish {
-int CI1=3000, QI1=3000;
+int CI1=3047, QI1=2879;
+int CI2=0,    QI2=0;
 TUNE(CI1, QI1);
+TUNE(SetRange(-12000, 12000), CI2, QI2);
 namespace {
 
   enum Stages {
@@ -170,7 +172,7 @@ top:
       endMoves = generate<CAPTURES>(pos, cur);
 
       score<CAPTURES>();
-      partial_insertion_sort(cur, endMoves, -CI1 * depth);
+      partial_insertion_sort(cur, endMoves, -CI1 * depth + CI2);
       ++stage;
       goto top;
 
@@ -208,7 +210,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -QI1 * depth);
+          partial_insertion_sort(cur, endMoves, -QI1 * depth + QI2);
       }
 
       ++stage;
