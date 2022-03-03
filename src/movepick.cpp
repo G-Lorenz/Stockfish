@@ -123,7 +123,7 @@ void MovePicker::score() {
           {
               m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                        - Value(type_of(pos.moved_piece(m)));
-              if (pos.check_squares(type_of(pos.piece_on(to_sq(m)))) & to_sq(m))
+              if (pos.checkers() & to_sq(m))
                   m.value += 1024;
           }
           else
