@@ -169,7 +169,7 @@ top:
       endMoves = generate<CAPTURES>(pos, cur);
 
       score<CAPTURES>();
-      partial_insertion_sort(cur, endMoves, -2935 * depth + 394);
+      partial_insertion_sort(cur, endMoves, -2930 * depth + 325);
       ++stage;
       goto top;
 
@@ -207,7 +207,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -2911 * depth - 209);
+          partial_insertion_sort(cur, endMoves, -2930 * depth - 281);
       }
 
       ++stage;
