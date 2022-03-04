@@ -840,7 +840,16 @@ namespace {
             thisThread->nmpMinPly = 0;
 
             if (v >= beta)
+            {
+                if (   !(    ss->ttHit
+                         &&  tte->depth() >= depth
+                         &&  ttValue != VALUE_NONE)
+                    && !ttMove)
+                    tte->save(posKey, value_to_tt(v, ss->ply), false,
+                              BOUND_LOWER,
+                              depth, MOVE_NONE, ss->staticEval);
                 return nullValue;
+            }
         }
     }
 
