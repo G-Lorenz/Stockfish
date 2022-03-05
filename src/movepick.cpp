@@ -122,7 +122,7 @@ void MovePicker::score() {
           if (pos.capture(m))
           {
               if (pos.checkers() & to_sq(m))
-                  m.value = QueenValueMg;
+                  m.value = PieceValue[MG][pos.piece_on(to_sq(m))];
               else
                   m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                            - Value(type_of(pos.moved_piece(m)));
