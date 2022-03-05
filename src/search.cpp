@@ -841,13 +841,12 @@ namespace {
 
             if (v >= beta)
             {
-                if (   !(    ss->ttHit
-                         &&  tte->depth() >= depth
-                         &&  ttValue != VALUE_NONE)
-                    && !ttMove)
+                if (!(    ss->ttHit
+                      &&  tte->depth() >= depth
+                      &&  ttValue != VALUE_NONE))
                     tte->save(posKey, value_to_tt(v, ss->ply), false,
                               BOUND_LOWER,
-                              depth, MOVE_NONE, ss->staticEval);
+                              depth, ttMove, ss->staticEval);
                 return nullValue;
             }
         }
