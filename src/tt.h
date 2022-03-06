@@ -37,23 +37,24 @@ namespace Stockfish {
 
 struct TTEntry {
 
-  Move  move()  const { return (Move )move16; }
-  Value value() const { return (Value)value16; }
-  Value eval()  const { return (Value)eval16; }
-  Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-  bool is_pv()  const { return (bool)(genBound8 & 0x4); }
-  Bound bound() const { return (Bound)(genBound8 & 0x3); }
-  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
+  bool  is_white() const {return key16 & (1 << 31);}
+  Move  move()  const { return (Move )(move16 & (0xFFFF << (16 * is_white()))); }
+  Value value() const { return (Value)(value16 & (0xFFFF << (16 * is_white()))); }
+  Value eval()  const { return (Value)(eval16 & (0xFFFF << (16 * is_white()))); }
+  Depth depth() const { return (Depth)(depth8 & (0xFF << (8 * is_white()))) + DEPTH_OFFSET;}
+  bool is_pv()  const { return (bool)(genBound8 & (0xFF << (8 * is_white())) & 0x4); }
+  Bound bound() const { return (Bound)(genBound8 & (0xFF << (8 * is_white())) & 0x3); }
+  void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, Color c);
 
 private:
   friend class TranspositionTable;
 
-  uint16_t key16;
-  uint8_t  depth8;
-  uint8_t  genBound8;
-  uint16_t move16;
-  int16_t  value16;
-  int16_t  eval16;
+  uint32_t key16;
+  uint16_t  depth8;
+  uint16_t  genBound8;
+  uint32_t move16;
+  uint32_t  value16;
+  uint32_t  eval16;
 };
 
 
@@ -69,10 +70,10 @@ class TranspositionTable {
 
   struct Cluster {
     TTEntry entry[ClusterSize];
-    char padding[2]; // Pad to 32 bytes
+    char padding[4]; // Pad to 64 bytes
   };
 
-  static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
+  static_assert(sizeof(Cluster) == 64, "Unexpected Cluster size");
 
   // Constants used to refresh the hash table periodically
   static constexpr unsigned GENERATION_BITS  = 3;                                // nb of bits reserved for other things
@@ -83,7 +84,7 @@ class TranspositionTable {
 public:
  ~TranspositionTable() { aligned_large_pages_free(table); }
   void new_search() { generation8 += GENERATION_DELTA; } // Lower bits are used for other things
-  TTEntry* probe(const Key key, bool& found) const;
+  TTEntry* probe(const Key key, bool& found, Color c) const;
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();

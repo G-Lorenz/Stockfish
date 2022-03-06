@@ -620,7 +620,7 @@ namespace {
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
     posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
-    tte = TT.probe(posKey, ss->ttHit);
+    tte = TT.probe(posKey, ss->ttHit, us);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
@@ -700,7 +700,7 @@ namespace {
                 {
                     tte->save(posKey, value_to_tt(value, ss->ply), ss->ttPv, b,
                               std::min(MAX_PLY - 1, depth + 6),
-                              MOVE_NONE, VALUE_NONE);
+                              MOVE_NONE, VALUE_NONE, us);
 
                     return value;
                 }
@@ -750,7 +750,7 @@ namespace {
 
         // Save static evaluation into transposition table
         if (!excludedMove)
-            tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
+            tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval, us);
     }
 
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
@@ -899,7 +899,7 @@ namespace {
                        && ttValue != VALUE_NONE))
                         tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
                             BOUND_LOWER,
-                            depth - 3, move, ss->staticEval);
+                            depth - 3, move, ss->staticEval, us);
                     return value;
                 }
             }
@@ -1364,7 +1364,7 @@ moves_loop: // When in check, search starts here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-                  depth, bestMove, ss->staticEval);
+                  depth, bestMove, ss->staticEval, us);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1392,6 +1392,7 @@ moves_loop: // When in check, search starts here
     Key posKey;
     Move ttMove, move, bestMove;
     Depth ttDepth;
+    Color us;
     Value bestValue, value, ttValue, futilityValue, futilityBase;
     bool pvHit, givesCheck, captureOrPromotion;
     int moveCount;
@@ -1420,8 +1421,9 @@ moves_loop: // When in check, search starts here
     ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
+    us = pos.side_to_move();
     posKey = pos.key();
-    tte = TT.probe(posKey, ss->ttHit);
+    tte = TT.probe(posKey, ss->ttHit, us);
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
     pvHit = ss->ttHit && tte->is_pv();
@@ -1465,7 +1467,7 @@ moves_loop: // When in check, search starts here
             // Save gathered info in transposition table
             if (!ss->ttHit)
                 tte->save(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                          DEPTH_NONE, MOVE_NONE, ss->staticEval);
+                          DEPTH_NONE, MOVE_NONE, ss->staticEval, us);
 
             return bestValue;
         }
@@ -1601,7 +1603,7 @@ moves_loop: // When in check, search starts here
     // Save gathered info in transposition table
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
               bestValue >= beta ? BOUND_LOWER : BOUND_UPPER,
-              ttDepth, bestMove, ss->staticEval);
+              ttDepth, bestMove, ss->staticEval, us);
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1900,7 +1902,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
         return false;
 
     pos.do_move(pv[0], st);
-    TTEntry* tte = TT.probe(pos.key(), ttHit);
+    TTEntry* tte = TT.probe(pos.key(), ttHit, pos.side_to_move());
 
     if (ttHit)
     {

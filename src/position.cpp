@@ -123,7 +123,6 @@ void Position::init() {
   for (int cr = NO_CASTLING; cr <= ANY_CASTLING; ++cr)
       Zobrist::castling[cr] = rng.rand<Key>();
 
-  Zobrist::side = rng.rand<Key>();
   Zobrist::noPawns = rng.rand<Key>();
 
   // Prepare the cuckoo tables
@@ -136,7 +135,7 @@ void Position::init() {
               if ((type_of(pc) != PAWN) && (attacks_bb(type_of(pc), s1, 0) & s2))
               {
                   Move move = make_move(s1, s2);
-                  Key key = Zobrist::psq[pc][s1] ^ Zobrist::psq[pc][s2] ^ Zobrist::side;
+                  Key key = Zobrist::psq[pc][s1] ^ Zobrist::psq[pc][s2];
                   int i = H1(key);
                   while (true)
                   {
@@ -357,9 +356,6 @@ void Position::set_state(StateInfo* si) const {
 
   if (si->epSquare != SQ_NONE)
       si->key ^= Zobrist::enpassant[file_of(si->epSquare)];
-
-  if (sideToMove == BLACK)
-      si->key ^= Zobrist::side;
 
   si->key ^= Zobrist::castling[si->castlingRights];
 
@@ -686,7 +682,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(&newSt != st);
 
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
-  Key k = st->key ^ Zobrist::side;
+  Key k = st->key;
 
   // Copy some fields of the old state to our new StateInfo object except the
   // ones which are going to be recalculated from scratch anyway and then switch
@@ -1012,7 +1008,6 @@ void Position::do_null_move(StateInfo& newSt) {
       st->epSquare = SQ_NONE;
   }
 
-  st->key ^= Zobrist::side;
   ++st->rule50;
   prefetch(TT.first_entry(key()));
 
@@ -1049,7 +1044,7 @@ Key Position::key_after(Move m) const {
   Square to = to_sq(m);
   Piece pc = piece_on(from);
   Piece captured = piece_on(to);
-  Key k = st->key ^ Zobrist::side;
+  Key k = st->key;
 
   if (captured)
       k ^= Zobrist::psq[captured][to];
