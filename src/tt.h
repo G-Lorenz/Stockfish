@@ -38,9 +38,9 @@ namespace Stockfish {
 struct TTEntry {
 
   bool  is_white() const {return key16 & (1 << 31);}
-  Move  move()  const { return (Move )(move16 & (0xFFFF << (16 * is_white()))); }
-  Value value() const { return (Value)(value16 & (0xFFFF << (16 * is_white()))); }
-  Value eval()  const { return (Value)(eval16 & (0xFFFF << (16 * is_white()))); }
+  Move  move()  const { return (Move) (is_white() ? move16 & ~0xFFFF : move16 & 0xFFFF); }
+  Value value() const { return is_white() ? white_value(value16) : black_value(value16); }
+  Value eval()  const { return is_white() ? white_value(eval16)  : black_value(eval16); }
   Depth depth() const { return (Depth)(depth8 & (0xFF << (8 * is_white()))) + DEPTH_OFFSET;}
   bool is_pv()  const { return (bool)(genBound8 & (0xFF << (8 * is_white())) & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & (0xFF << (8 * is_white())) & 0x3); }
@@ -53,8 +53,8 @@ private:
   uint16_t  depth8;
   uint16_t  genBound8;
   uint32_t move16;
-  uint32_t  value16;
-  uint32_t  eval16;
+  int32_t  value16;
+  int32_t  eval16;
 };
 
 

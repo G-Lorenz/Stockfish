@@ -35,15 +35,16 @@ TranspositionTable TT; // Our global transposition table
 
 void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, Color c) {
 
-  uint32_t mask16 = c == WHITE ? 0xFFFF0000 : 0xFFFF;
-  uint16_t mask8  = c == WHITE ? 0xFF00     : 0xFF;
+  uint32_t mask16 = c == WHITE ? ~0xFFFF : 0xFFFF;
+  uint16_t mask8  = c == WHITE ? ~0xFF   : 0xFF;
+  uint32_t key    = (key16 & 0x7FFFFFFF);
     // Preserve any existing move for the same position
-  if (m || (uint16_t)k != key16)
+  if (m || (k & 0x7FFFFFFF) != key)
       move16 = (move16 & ~mask16) | (m & mask16);
 
   // Overwrite less valuable entries (cheapest checks first)
   if (   b == BOUND_EXACT
-      || (k & 0x7FFFFFFF) != key16
+      || (k & 0x7FFFFFFF) != key
       || d - DEPTH_OFFSET + 2 * pv > (depth8 & mask8) - 4)
   {
       assert(d > DEPTH_OFFSET);
@@ -52,8 +53,8 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, 
       key16     = (k & 0x7FFFFFFF) | ((c == WHITE ? 1 : 0) << 31);
       depth8    = (uint16_t)(((depth8 & ~mask8) | (d & mask8)) - DEPTH_OFFSET);
       genBound8 = (uint16_t)((genBound8 & ~mask8) | ((TT.generation8 | uint8_t(pv) << 2 | b) & mask8));
-      value16   = (uint32_t)((value16 & ~mask16) | ((v & 0xFFFF) << (8 * (c == 0))));
-      eval16    = (uint32_t)((eval16 & ~mask16) | ((ev & 0xFFFF) << (8 * (c == 0))));
+      value16   = c == WHITE ? make_valuett(v, value16 & ~mask16) : make_valuett(value16 & ~mask16, v);
+      eval16    = c == WHITE ? make_valuett(ev, eval16 & ~mask16) : make_valuett(eval16 & ~mask16, ev);
   }
 }
 

@@ -301,6 +301,25 @@ inline Value mg_value(Score s) {
   return Value(mg.s);
 }
 
+/// TT Types
+/// Store value and eval for both side to move in one int32_t
+constexpr int32_t make_valuett(int black, int white) {
+  return (int32_t)(((unsigned int)white << 16) + black);
+}
+
+/// Extracting the signed lower and upper 16 bits is not so trivial because
+/// according to the standard a simple cast to short is implementation defined
+/// and so is a right shift of a signed integer.
+inline Value white_value(int32_t s) {
+  union { uint16_t u; int16_t s; } white = { uint16_t(unsigned(s + 0x8000) >> 16) };
+  return Value(white.s);
+}
+
+inline Value black_value(int32_t s) {
+  union { uint16_t u; int16_t s; } black = { uint16_t(unsigned(s + 0x8000) >> 16) };
+  return Value(black.s);
+}
+
 #define ENABLE_BASE_OPERATORS_ON(T)                                \
 constexpr T operator+(T d1, int d2) { return T(int(d1) + d2); }    \
 constexpr T operator-(T d1, int d2) { return T(int(d1) - d2); }    \
