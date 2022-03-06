@@ -50,6 +50,7 @@ struct StateInfo {
 
   // Not copied when making a move (will be recomputed anyhow)
   Key        key;
+  Key        keyTT;
   Bitboard   checkersBB;
   StateInfo* previous;
   Bitboard   blockersForKing[COLOR_NB];
@@ -147,6 +148,7 @@ public:
 
   // Accessing hash keys
   Key key() const;
+  Key keyTT() const;
   Key key_after(Move m) const;
   Key material_key() const;
   Key pawn_key() const;
@@ -312,6 +314,11 @@ inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
 inline Key Position::key() const {
   return st->rule50 < 14 ? st->key
                          : st->key ^ make_key((st->rule50 - 14) / 8);
+}
+
+inline Key Position::keyTT() const {
+  return st->rule50 < 14 ? st->keyTT
+                         : st->keyTT ^ make_key((st->rule50 - 14) / 8);
 }
 
 inline Key Position::pawn_key() const {

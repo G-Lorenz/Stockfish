@@ -358,10 +358,11 @@ void Position::set_state(StateInfo* si) const {
   if (si->epSquare != SQ_NONE)
       si->key ^= Zobrist::enpassant[file_of(si->epSquare)];
 
+  si->key ^= Zobrist::castling[si->castlingRights];
+  si->keyTT = si->key;
+
   if (sideToMove == BLACK)
       si->key ^= Zobrist::side;
-
-  si->key ^= Zobrist::castling[si->castlingRights];
 
   for (Piece pc : Pieces)
       for (int cnt = 0; cnt < pieceCount[pc]; ++cnt)
