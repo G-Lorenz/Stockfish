@@ -55,6 +55,13 @@ void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, 
       value16[c]   = (int16_t)v;
       eval16[c]    = (int16_t)ev;
   }
+  if ((uint32_t)k != key16)
+  {
+      depth8[~c]   = 0;
+      genBound8[~c]= 0;
+      value16[~c]  = 0;
+      eval16[~c]   = 0;
+  }
 }
 
 
