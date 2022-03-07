@@ -35,26 +35,40 @@ TranspositionTable TT; // Our global transposition table
 
 void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, Color c) {
 
-  uint32_t mask16 = c == WHITE ? ~0xFFFF : 0xFFFF;
-  uint16_t mask8  = c == WHITE ? ~0xFF   : 0xFF;
   uint32_t key    = (key16 & 0x7FFFFFFF);
+  bool isWhite = c == WHITE;
     // Preserve any existing move for the same position
-  if (m || (k & 0x7FFFFFFF) != key)
-      move16 = (move16 & ~mask16) | (m & mask16);
+  if (m || ((k & 0x7FFFFFFF) != key))
+  {
+      if (isWhite)
+          whiteMove16 = (uint16_t)m;
+      else
+          blackMove16 = (uint16_t)m;
+  }
 
   // Overwrite less valuable entries (cheapest checks first)
   if (   b == BOUND_EXACT
       || (k & 0x7FFFFFFF) != key
-      || d - DEPTH_OFFSET + 2 * pv > (depth8 & mask8) - 4)
+      || d - DEPTH_OFFSET + 2 * pv > (isWhite ? whiteDepth8 : blackDepth8) - 4)
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
 
-      key16     = (k & 0x7FFFFFFF) | ((c == WHITE ? 1 : 0) << 31);
-      depth8    = (uint16_t)(((depth8 & ~mask8) | (d & mask8)) - DEPTH_OFFSET);
-      genBound8 = (uint16_t)((genBound8 & ~mask8) | ((TT.generation8 | uint8_t(pv) << 2 | b) & mask8));
-      value16   = c == WHITE ? make_valuett(v, value16 & ~mask16) : make_valuett(value16 & ~mask16, v);
-      eval16    = c == WHITE ? make_valuett(ev, eval16 & ~mask16) : make_valuett(eval16 & ~mask16, ev);
+      key16     = (k & 0x7FFFFFFF) | ((isWhite ? 1 : 0) << 31);
+      if (isWhite)
+      {
+         whiteDepth8    = (uint8_t)(d - DEPTH_OFFSET);
+         whiteGenBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+         whiteValue16   = (int16_t)v;
+         whiteEval16    = (int16_t)ev;
+      }
+      else
+      {
+         blackDepth8    = (uint8_t)(d - DEPTH_OFFSET);
+         blackGenBound8 = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+         blackValue16   = (int16_t)v;
+         blackEval16    = (int16_t)ev;
+      }
   }
 }
 
@@ -122,31 +136,56 @@ void TranspositionTable::clear() {
 
 TTEntry* TranspositionTable::probe(const Key key, bool& found, Color c) const {
 
-  uint16_t mask8 = c == WHITE ? 0xFF00 : 0xFF;
   TTEntry* const tte = first_entry(key);
   const uint16_t key16 = key & 0x7FFFFFFF;  // Use the low 30 bits as key inside the cluster
+  bool isWhite = c == WHITE;
 
-  for (int i = 0; i < ClusterSize; ++i)
-      if (tte[i].key16 == key16 || !tte[i].depth())
-      {
-          tte[i].genBound8 =(tte[i].genBound8 & ~mask8) | (generation8 | ((tte[i].genBound8 & mask8) & (GENERATION_DELTA - 1))); // Refresh
+  if (isWhite)
+  {
+      for (int i = 0; i < ClusterSize; ++i)
+          if ((tte[i].key16 & 0x7FFFFFFF) == key16 || !tte[i].whiteDepth8)
+          {
+              tte[i].whiteGenBound8 = uint8_t(generation8 | (tte[i].whiteGenBound8 & (GENERATION_DELTA - 1))); // Refresh
+              return found = (bool)tte[i].whiteDepth8, &tte[i];
+          }
+  
+      // Find an entry to be replaced according to the replacement strategy
+      TTEntry* replace = tte;
+      for (int i = 1; i < ClusterSize; ++i)
+          // Due to our packed storage format for generation and its cyclic
+          // nature we add GENERATION_CYCLE (256 is the modulus, plus what
+          // is needed to keep the unrelated lowest n bits from affecting
+          // the result) to calculate the entry age correctly even after
+          // generation8 overflows into the next cycle.
+          if (  replace->whiteDepth8 - ((GENERATION_CYCLE + generation8 - (replace->whiteGenBound8)) & GENERATION_MASK)
+              >   tte[i].whiteDepth8 - ((GENERATION_CYCLE + generation8 -   (tte[i].whiteGenBound8)) & GENERATION_MASK))
+              replace = &tte[i];
 
-          return found = (bool)tte[i].depth(), &tte[i];
-      }
+      return found = false, replace;
+  }
+  else // Black
+  {
+      for (int i = 0; i < ClusterSize; ++i)
+          if ((tte[i].key16 & 0x7FFFFFFF) == key16 || !tte[i].blackDepth8)
+          {
+              tte[i].blackGenBound8 = uint8_t(generation8 | (tte[i].blackGenBound8 & (GENERATION_DELTA - 1))); // Refresh
+              return found = (bool)tte[i].blackDepth8, &tte[i];
+          }
+  
+      // Find an entry to be replaced according to the replacement strategy
+      TTEntry* replace = tte;
+      for (int i = 1; i < ClusterSize; ++i)
+          // Due to our packed storage format for generation and its cyclic
+          // nature we add GENERATION_CYCLE (256 is the modulus, plus what
+          // is needed to keep the unrelated lowest n bits from affecting
+          // the result) to calculate the entry age correctly even after
+          // generation8 overflows into the next cycle.
+          if (  replace->blackDepth8 - ((GENERATION_CYCLE + generation8 - (replace->blackGenBound8)) & GENERATION_MASK)
+              >   tte[i].blackDepth8 - ((GENERATION_CYCLE + generation8 -   (tte[i].blackGenBound8)) & GENERATION_MASK))
+              replace = &tte[i];
 
-  // Find an entry to be replaced according to the replacement strategy
-  TTEntry* replace = tte;
-  for (int i = 1; i < ClusterSize; ++i)
-      // Due to our packed storage format for generation and its cyclic
-      // nature we add GENERATION_CYCLE (256 is the modulus, plus what
-      // is needed to keep the unrelated lowest n bits from affecting
-      // the result) to calculate the entry age correctly even after
-      // generation8 overflows into the next cycle.
-      if (  replace->depth8 - ((GENERATION_CYCLE + generation8 - (replace->genBound8 & mask8)) & GENERATION_MASK)
-          >   tte[i].depth8 - ((GENERATION_CYCLE + generation8 -   (tte[i].genBound8 & mask8)) & GENERATION_MASK))
-          replace = &tte[i];
-
-  return found = false, replace;
+      return found = false, replace;
+  }
 }
 
 
@@ -158,7 +197,7 @@ int TranspositionTable::hashfull() const {
   int cnt = 0;
   for (int i = 0; i < 1000; ++i)
       for (int j = 0; j < ClusterSize; ++j)
-          cnt += table[i].entry[j].depth8 && (table[i].entry[j].genBound8 & GENERATION_MASK) == generation8;
+          cnt += table[i].entry[j].whiteDepth8 && (table[i].entry[j].whiteGenBound8 & GENERATION_MASK) == generation8;
 
   return cnt / ClusterSize;
 }

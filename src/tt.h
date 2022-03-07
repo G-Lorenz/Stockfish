@@ -38,23 +38,23 @@ namespace Stockfish {
 struct TTEntry {
 
   bool  is_white() const {return key16 & (1 << 31);}
-  Move  move()  const { return (Move) (is_white() ? move16 & ~0xFFFF : move16 & 0xFFFF); }
-  Value value() const { return is_white() ? white_value(value16) : black_value(value16); }
-  Value eval()  const { return is_white() ? white_value(eval16)  : black_value(eval16); }
-  Depth depth() const { return (Depth)(depth8 & (0xFF << (8 * is_white()))) + DEPTH_OFFSET;}
-  bool is_pv()  const { return (bool)(genBound8 & (0xFF << (8 * is_white())) & 0x4); }
-  Bound bound() const { return (Bound)(genBound8 & (0xFF << (8 * is_white())) & 0x3); }
+  Move  move()  const { return (Move)  (is_white() ? whiteMove16 : blackMove16); }
+  Value value() const { return (Value) (is_white() ? whiteValue16 : blackValue16); }
+  Value eval()  const { return (Value) (is_white() ? whiteEval16  : blackEval16); }
+  Depth depth() const { return (Depth) (is_white() ? whiteDepth8 : blackDepth8) + DEPTH_OFFSET;}
+  bool is_pv()  const { return (bool) ((is_white() ? whiteGenBound8 : blackGenBound8) & 0x4); }
+  Bound bound() const { return (Bound)((is_white() ? whiteGenBound8 : blackGenBound8) & 0x3); }
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, Color c);
 
 private:
   friend class TranspositionTable;
 
   uint32_t key16;
-  uint16_t  depth8;
-  uint16_t  genBound8;
-  uint32_t move16;
-  int32_t  value16;
-  int32_t  eval16;
+  uint8_t  whiteDepth8, blackDepth8;
+  uint8_t  whiteGenBound8, blackGenBound8;
+  uint16_t whiteMove16, blackMove16;
+  int16_t  whiteValue16, blackValue16;
+  int16_t  whiteEval16, blackEval16;
 };
 
 
