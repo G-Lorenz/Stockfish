@@ -35,27 +35,25 @@ TranspositionTable TT; // Our global transposition table
 
 void TTEntry::save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, Color c) {
 
-  uint32_t key    = (key16 & 0x7FFFFFFF);
-  bool isWhite = c == WHITE;
     // Preserve any existing move for the same position
-  if (m || ((k & 0x7FFFFFFF) != key))
+  if (m || ((uint32_t)k != key16))
   {
-      move16[isWhite] = (uint16_t)m;
+      move16[c] = (uint16_t)m;
   }
 
   // Overwrite less valuable entries (cheapest checks first)
   if (   b == BOUND_EXACT
-      || (k & 0x7FFFFFFF) != key
-      || d - DEPTH_OFFSET + 2 * pv > depth8[isWhite] - 4)
+      || (uint32_t)k != key16
+      || d - DEPTH_OFFSET + 2 * pv > depth8[c] - 4)
   {
       assert(d > DEPTH_OFFSET);
       assert(d < 256 + DEPTH_OFFSET);
 
-      key16              = (k & 0x7FFFFFFF) | ((isWhite ? 1 : 0) << 31);
-      depth8[isWhite]    = (uint8_t)(d - DEPTH_OFFSET);
-      genBound8[isWhite] = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
-      value16[isWhite]   = (int16_t)v;
-      eval16[isWhite]    = (int16_t)ev;
+      key16        = (uint32_t)k;
+      depth8[c]    = (uint8_t)(d - DEPTH_OFFSET);
+      genBound8[c] = (uint8_t)(TT.generation8 | uint8_t(pv) << 2 | b);
+      value16[c]   = (int16_t)v;
+      eval16[c]    = (int16_t)ev;
   }
 }
 
@@ -124,14 +122,13 @@ void TranspositionTable::clear() {
 TTEntry* TranspositionTable::probe(const Key key, bool& found, Color c) const {
 
   TTEntry* const tte = first_entry(key);
-  const uint16_t key16 = key & 0x7FFFFFFF;  // Use the low 30 bits as key inside the cluster
-  bool isWhite = c == WHITE;
+  const uint32_t key16 = (uint32_t) key;  // Use the low 30 bits as key inside the cluster
 
       for (int i = 0; i < ClusterSize; ++i)
-          if ((tte[i].key16 & 0x7FFFFFFF) == key16 || !tte[i].depth8[isWhite])
+          if (tte[i].key16 == key16 || !tte[i].depth8[c])
           {
-              tte[i].genBound8[isWhite] = uint8_t(generation8 | (tte[i].genBound8[isWhite] & (GENERATION_DELTA - 1))); // Refresh
-              return found = (bool)tte[i].depth8[isWhite], &tte[i];
+              tte[i].genBound8[c] = uint8_t(generation8 | (tte[i].genBound8[c] & (GENERATION_DELTA - 1))); // Refresh
+              return found = (bool)tte[i].depth8[c], &tte[i];
           }
   
       // Find an entry to be replaced according to the replacement strategy
@@ -142,8 +139,8 @@ TTEntry* TranspositionTable::probe(const Key key, bool& found, Color c) const {
           // is needed to keep the unrelated lowest n bits from affecting
           // the result) to calculate the entry age correctly even after
           // generation8 overflows into the next cycle.
-          if (  replace->depth8[isWhite] - ((GENERATION_CYCLE + generation8 - (replace->genBound8[isWhite])) & GENERATION_MASK)
-              >   tte[i].depth8[isWhite] - ((GENERATION_CYCLE + generation8 -   (tte[i].genBound8[isWhite])) & GENERATION_MASK))
+          if (  replace->depth8[c] - ((GENERATION_CYCLE + generation8 - (replace->genBound8[c])) & GENERATION_MASK)
+              >   tte[i].depth8[c] - ((GENERATION_CYCLE + generation8 -   (tte[i].genBound8[c])) & GENERATION_MASK))
               replace = &tte[i];
 
       return found = false, replace;
