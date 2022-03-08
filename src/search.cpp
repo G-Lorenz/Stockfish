@@ -780,7 +780,7 @@ namespace {
         && depth <= 7
         && eval < alpha - 348 - 258 * depth * depth)
     {
-        value = search<NonPV>(pos, ss, alpha - 1, alpha, depth - 3, false);
+        value = search<NonPV>(pos, ss, alpha - 1, alpha, depth - 5, false);
         if (value < alpha)
             return value;
     }
