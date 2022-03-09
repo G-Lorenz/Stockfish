@@ -510,7 +510,8 @@ void Thread::search() {
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
-
+int A = 16, B = 2000, C = 2000;
+TUNE(A, B, C);
 
 namespace {
 
@@ -756,7 +757,7 @@ namespace {
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
-        int bonus = std::clamp(-8 * int((ss-1)->staticEval + ss->staticEval), -2000, 2000);
+        int bonus = std::clamp(-A * int((ss-1)->staticEval + ss->staticEval), -B, C);
         thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
     }
 
