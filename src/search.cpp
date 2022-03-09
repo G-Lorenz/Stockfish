@@ -777,6 +777,7 @@ namespace {
     // If eval is really low check with qsearch if it can exceed alpha, if it can't,
     // return a fail low.
     if (   !PvNode
+        && (ss-1)->moveCount > 4
         && depth <= 7
         && eval < alpha - 348 - 258 * depth * depth)
     {
