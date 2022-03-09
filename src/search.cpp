@@ -780,7 +780,7 @@ namespace {
         && depth <= 7 && depth > 2
         && eval < alpha - 348 - 258 * depth * depth)
     {
-        value = search<NonPV>(pos, ss, alpha - 1, alpha, 2, cutNode);
+        value = search<NonPV>(pos, ss, alpha - 1, alpha, 2, false);
         if (value < alpha)
             return value;
     }
