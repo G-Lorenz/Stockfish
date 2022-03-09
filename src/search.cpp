@@ -767,10 +767,10 @@ namespace {
     thisThread->complexityAverage.update(complexity);
 
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
-    if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
+    if (is_ok((ss-2)->currentMove) && !(ss-2)->inCheck && !priorCapture)
     {
         int bonus = std::clamp(-16 * improvement, -2000, 2000);
-        thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
+        thisThread->mainHistory[~us][from_to((ss-2)->currentMove)] << bonus;
     }
 
 
