@@ -1369,10 +1369,10 @@ moves_loop: // When in check, search starts here
     {
 
         // Use value difference to improve quiet move ordering
-        if (ttValue && is_ok(ss->currentMove) && !ss->inCheck && !priorCapture)
+        if (ttValue && is_ok(ss->currentMove) && !ss->inCheck && !pos.capture_or_promotion(bestMove))
         {
             int bonus = std::clamp(8 * int(-ttValue + bestValue), -1000, 1000);
-            thisThread->mainHistory[us][from_to((ss)->currentMove)] << bonus;	
+            thisThread->mainHistory[us][from_to(bestMove)] << bonus;
         }
 
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
