@@ -1240,9 +1240,9 @@ moves_loop: // When in check, search starts here
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
       // Use value difference to improve quiet move ordering
-      if (ttValue && is_ok(ss->currentMove) && !ss->inCheck && !pos.capture_or_promotion(move))
+      if (is_ok(move) && !ss->inCheck && !captureOrPromotion)
       {
-          int bonus = std::clamp(8 * int(-ttValue + value), -1000, 1000);
+          int bonus = std::clamp(int(-bestValue + value), -128, 128);
           thisThread->mainHistory[us][from_to(move)] << bonus;
       }
 
