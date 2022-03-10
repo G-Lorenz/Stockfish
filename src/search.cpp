@@ -1239,6 +1239,13 @@ moves_loop: // When in check, search starts here
 
       assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
+      // Use value difference to improve quiet move ordering
+      if (ttValue && is_ok(ss->currentMove) && !ss->inCheck && !pos.capture_or_promotion(move))
+      {
+          int bonus = std::clamp(8 * int(-ttValue + value), -1000, 1000);
+          thisThread->mainHistory[us][from_to(move)] << bonus;
+      }
+
       // Step 20. Check for a new best move
       // Finished searching the move. If a stop occurred, the return value of
       // the search cannot be trusted, and we return immediately without
@@ -1366,20 +1373,10 @@ moves_loop: // When in check, search starts here
 
     // Write gathered information in transposition table
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
-    {
-
-        // Use value difference to improve quiet move ordering
-        if (ttValue && is_ok(ss->currentMove) && !ss->inCheck && !pos.capture_or_promotion(bestMove))
-        {
-            int bonus = std::clamp(8 * int(-ttValue + bestValue), -1000, 1000);
-            thisThread->mainHistory[us][from_to(bestMove)] << bonus;
-        }
-
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
                   depth, bestMove, ss->staticEval);
-    }
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
