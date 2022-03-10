@@ -756,7 +756,7 @@ namespace {
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
-        int bonus = std::clamp(-15 * int((ss-1)->staticEval + ss->staticEval), -2077, 2038);
+        int bonus = std::clamp(-16 * int((ss-1)->staticEval + ss->staticEval), -2058, 2058);
         thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
     }
 
