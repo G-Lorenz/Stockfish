@@ -624,7 +624,7 @@ namespace {
     ttValue = ss->ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
             : ss->ttHit    ? tte->move() : MOVE_NONE;
-    ttCapture = ttMove && pos.capture_or_promotion(ttMove);
+    ttCapture = ttMove && pos.capture_or_promotion(ttMove) && !pos.empty(to_sq(ttMove));
     if (!excludedMove)
         ss->ttPv = PvNode || (ss->ttHit && tte->is_pv());
 
