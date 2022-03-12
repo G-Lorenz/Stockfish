@@ -868,7 +868,7 @@ namespace {
         ss->ttPv = false;
 
         while ((move = mp.next_move()) != MOVE_NONE)
-            if (move != excludedMove && pos.legal(move))
+            if (move != excludedMove && !pos.empty(to_sq(move)) && pos.legal(move))
             {
                 assert(pos.capture_or_promotion(move));
 
