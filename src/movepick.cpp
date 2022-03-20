@@ -130,7 +130,7 @@ void MovePicker::score() {
       }
 
       if (pos.gives_check(m))
-          m.value += 20000 - 400 * distance(pos.square<KING>(~pos.side_to_move()), to_sq(m));
+          m.value += 19000;
   }
 }
 
