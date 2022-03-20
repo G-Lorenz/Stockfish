@@ -106,6 +106,7 @@ void MovePicker::score() {
   static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
   for (auto& m : *this)
+  {
       if constexpr (Type == CAPTURES)
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
@@ -127,6 +128,10 @@ void MovePicker::score() {
                        + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                        - (1 << 28);
       }
+
+      if (pos.gives_check(m))
+          m.value += 20000 - 400 * distance(pos.square<KING>(~pos.side_to_move()), to_sq(m));
+  }
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
