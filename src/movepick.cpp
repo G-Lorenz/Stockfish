@@ -120,8 +120,12 @@ void MovePicker::score() {
       else // Type == EVASIONS
       {
           if (pos.capture(m))
+          {
               m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                        - Value(type_of(pos.moved_piece(m)));
+              if (pos.checkers() & to_sq(m))
+                  m.value += PieceValue[MG][pos.piece_on(to_sq(m))];
+          }
           else
               m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
                        + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
