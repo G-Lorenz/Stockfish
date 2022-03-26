@@ -107,8 +107,17 @@ void MovePicker::score() {
 
   for (auto& m : *this)
       if constexpr (Type == CAPTURES)
+      {
+          Bitboard whitePawns = pos.pieces(WHITE, PAWN);
+          Bitboard blackPawns = pos.pieces(BLACK, PAWN);
+          int blockedCount = popcount(shift<pawn_push(WHITE)>(whitePawns) & blackPawns);
+
           m.value =  6 * int(PieceValue[MG][pos.piece_on(to_sq(m))])
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
+
+          if (type_of(pos.moved_piece(m)) == PAWN && blockedCount > 3)
+              m.value += 1024;
+      }
 
       else if constexpr (Type == QUIETS)
           m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
