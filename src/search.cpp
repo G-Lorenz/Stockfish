@@ -1681,7 +1681,7 @@ moves_loop: // When in check, search starts here
     bonus2 = bestValue > beta + PawnValueMg ? bonus1               // larger bonus
                                             : stat_bonus(depth);   // smaller bonus
 
-    if (!pos.capture(bestMove))
+    if (!(pos.capture(bestMove) || promotion_type(bestMove) == QUEEN))
     {
         // Increase stats for the best move in case it was a quiet move
         update_quiet_stats(pos, ss, bestMove, bonus2);
