@@ -736,10 +736,6 @@ namespace {
         if (eval == VALUE_NONE)
             ss->staticEval = eval = evaluate(pos);
 
-        // Randomize draw evaluation
-        if (eval == VALUE_DRAW)
-            eval = value_draw(thisThread);
-
         // ttValue can be used as a better position evaluation (~4 Elo)
         if (    ttValue != VALUE_NONE
             && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
@@ -753,6 +749,10 @@ namespace {
         if (!excludedMove)
             tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
+
+    // Randomize draw evaluation
+    if (eval == VALUE_DRAW)
+        eval = value_draw(thisThread);
 
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
