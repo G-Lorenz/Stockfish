@@ -83,9 +83,9 @@ namespace {
     return std::min((9 * d + 270) * d - 311 , 2145);
   }
 
-  // Add a small random component to draw evaluations to avoid 3-fold blindness
+  // In case of draw eval prefer more complex positions
   Value value_draw(Thread* thisThread) {
-    return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
+    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - 512) / 256, -2, 2));
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
