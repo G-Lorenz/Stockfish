@@ -22,7 +22,10 @@
 #include "movepick.h"
 
 namespace Stockfish {
-
+int QI=3000;
+int QT1=50000, QT2=25000, QT3=15000;
+TUNE(QI);
+TUNE(QT1, QT2, QT3);
 namespace {
 
   enum Stages {
@@ -143,9 +146,9 @@ void MovePicker::score() {
                    +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
                    +     (threatened & from_sq(m) ?
-                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 50000
-                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 25000
-                          :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
+                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? QT1
+                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? QT2
+                          :                                         !(to_sq(m) & threatenedByPawn)  ? QT3
                           :                                                                           0)
                           :                                                                           0);
 
@@ -239,7 +242,7 @@ top:
           endMoves = generate<QUIETS>(pos, cur);
 
           score<QUIETS>();
-          partial_insertion_sort(cur, endMoves, -3000 * depth);
+          partial_insertion_sort(cur, endMoves, -QI * depth);
       }
 
       ++stage;
