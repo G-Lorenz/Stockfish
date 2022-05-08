@@ -85,7 +85,7 @@ namespace {
 
   // In case of draw eval prefer more complex positions
   Value value_draw(Thread* thisThread) {
-    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - 512) / 256, -2, 2));
+    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - 400) / 32, -2, 2));
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
