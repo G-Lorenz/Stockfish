@@ -37,6 +37,11 @@
 
 namespace Stockfish {
 
+int A=512, B=256, C=2;
+TUNE(SetRange(0, 2048), A);
+TUNE(SetRange(0, 2048), B);
+TUNE(SetRange(0, 5), C);
+
 namespace Search {
 
   LimitsType Limits;
@@ -85,7 +90,7 @@ namespace {
 
   // In case of draw eval prefer more complex positions
   Value value_draw(Thread* thisThread) {
-    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - 512) / 256, -2, 2));
+    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - A) / B, -C, C));
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
