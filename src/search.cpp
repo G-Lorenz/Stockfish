@@ -38,8 +38,8 @@
 namespace Stockfish {
 
 int A=512, B=256, C=2;
-TUNE(SetRange(0, 2048), A);
-TUNE(SetRange(1, 2048), B);
+TUNE(A);
+TUNE(SetRange(32, 512), B);
 TUNE(SetRange(0, 5), C);
 
 namespace Search {
