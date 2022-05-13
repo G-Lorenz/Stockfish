@@ -86,8 +86,8 @@ namespace {
   // In case of draw eval prefer more complex positions
   Value value_draw(Thread* thisThread) {
     int complexity = thisThread->complexityAverage.value();
-    return VALUE_DRAW + Value(  complexity > 776 ?  1
-                              : complexity <  14 ? -1
+    return VALUE_DRAW + Value(  complexity > 808 ?  1
+                              : complexity < 146 ? -1
                               :                     0);
   }
 
