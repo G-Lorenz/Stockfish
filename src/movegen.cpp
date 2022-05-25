@@ -46,6 +46,7 @@ namespace {
   ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
     constexpr Color     Them     = ~Us;
+    constexpr Bitboard  TRank8BB = (Us == WHITE ? Rank8BB    : Rank1BB);
     constexpr Bitboard  TRank7BB = (Us == WHITE ? Rank7BB    : Rank2BB);
     constexpr Bitboard  TRank3BB = (Us == WHITE ? Rank3BB    : Rank6BB);
     constexpr Direction Up       = pawn_push(Us);
@@ -96,7 +97,7 @@ namespace {
     }
 
     // Promotions and underpromotions
-    if (pawnsOn7)
+    if (pawnsOn7 && (Type != EVASIONS || (target & TRank8BB)))
     {
         Bitboard b1 = shift<UpRight>(pawnsOn7) & enemies;
         Bitboard b2 = shift<UpLeft >(pawnsOn7) & enemies;
