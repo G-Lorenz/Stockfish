@@ -70,7 +70,7 @@ public:
   StateInfo rootState;
   Search::RootMoves rootMoves;
   Depth rootDepth, completedDepth, depth, previousDepth;
-  double inverseRootDelta;
+  float inverseRootDelta;
   CounterMoveHistory counterMoves;
   ButterflyHistory mainHistory;
   CapturePieceToHistory captureHistory;

@@ -69,7 +69,7 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
-  Depth reduction(bool i, Depth d, int mn, Value delta, double inverseRootDelta) {
+  Depth reduction(bool i, Depth d, int mn, Value delta, float inverseRootDelta) {
     int r = Reductions[d] * Reductions[mn];
     return int(r + 1462 - 1024 * int(delta) * inverseRootDelta) / 1024 + (!i && r > 1010);
   }
@@ -599,7 +599,7 @@ namespace {
             return alpha;
     }
     else
-        thisThread->inverseRootDelta = 1.0 / (beta - alpha);
+        thisThread->inverseRootDelta = 1.0f / (beta - alpha);
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
