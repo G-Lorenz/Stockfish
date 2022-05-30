@@ -36,7 +36,10 @@
 #include "syzygy/tbprobe.h"
 
 namespace Stockfish {
-
+int A=3, B=3;
+int C=1, D=2;
+TUNE(A, B);
+TUNE(SetRange(1, 8), C, D);
 namespace Search {
 
   LimitsType Limits;
@@ -74,9 +77,9 @@ namespace {
     return (r + 1463 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
   }
 
-  constexpr int futility_move_count(bool improving, Depth depth) {
-    return improving ? (3 + depth * depth)
-                     : (3 + depth * depth) / 2;
+  int futility_move_count(bool improving, Depth depth) {
+    return improving ? (A + depth * depth) / C
+                     : (B + depth * depth) / D;
   }
 
   // History and stats update bonus, based on depth
