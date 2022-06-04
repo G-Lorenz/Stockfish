@@ -912,7 +912,7 @@ namespace {
     if (   PvNode
         && depth >= 3
         && !ttMove)
-        depth -= 2;
+        depth -= 2 - priorCapture;
 
     if (   cutNode
         && depth >= 8
