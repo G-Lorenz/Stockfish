@@ -908,11 +908,11 @@ namespace {
          ss->ttPv = ttPv;
     }
 
-    // Step 11. If the position is not in TT, decrease depth by 2 or 1 depending on node type (~3 Elo)
+    // Step 11. If the position is not in TT, decrease depth by 1 depending on depth (~3 Elo)
     if (   PvNode
         && depth >= 3
         && !ttMove)
-        depth -= 2 - priorCapture;
+        depth--;
 
     if (   cutNode
         && depth >= 8
