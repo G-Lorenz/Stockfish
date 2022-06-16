@@ -722,7 +722,7 @@ namespace {
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
     // Step 6. Static evaluation of the position
-    if (ss->inCheck)
+    if (__builtin_expect(ss->inCheck, false))
     {
         // Skip early pruning when in check
         ss->staticEval = eval = VALUE_NONE;
