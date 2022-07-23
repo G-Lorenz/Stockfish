@@ -59,19 +59,6 @@ using namespace std;
 namespace Stockfish {
 
 namespace Eval {
-  
-  int aa=183, bb=148, cc=98, dd=69, ee=30, ff=873, gg=100, hh=60, ii=40, jj=37 ;
-  
-  TUNE(SetRange(140, 210), aa);
-  TUNE(SetRange(110, 180), bb);
-  TUNE(SetRange(75, 125), cc);
-  TUNE(SetRange(45, 95), dd);
-  TUNE(SetRange(0, 60), ee);
-  TUNE(SetRange(800, 999), ff);
-  TUNE(SetRange(75, 125), gg);
-  TUNE(SetRange(30, 85), hh);
-  TUNE(SetRange(15, 70), ii);
-  TUNE(SetRange(10, 60), jj);
 
   bool useNNUE;
   string currentEvalFileName = "None";
@@ -219,6 +206,19 @@ namespace {
   // higher if multiple safe checks are possible for that piece type.
   constexpr int SafeCheck[][2] = {
       {}, {}, {805, 1292}, {650, 984}, {1071, 1886}, {730, 1128}
+    
+      int aa=183, bb=148, cc=98, dd=69, ee=30, ff=873, gg=100, hh=60, ii=40, jj=37 ;
+  
+  TUNE(SetRange(140, 210), aa);
+  TUNE(SetRange(110, 180), bb);
+  TUNE(SetRange(75, 125), cc);
+  TUNE(SetRange(45, 95), dd);
+  TUNE(SetRange(0, 60), ee);
+  TUNE(SetRange(800, 999), ff);
+  TUNE(SetRange(75, 125), gg);
+  TUNE(SetRange(30, 85), hh);
+  TUNE(SetRange(15, 70), ii);
+  TUNE(SetRange(10, 60), jj);
   };
 
 #define S(mg, eg) make_score(mg, eg)
