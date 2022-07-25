@@ -104,7 +104,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const Cap
 template<GenType Type>
 void MovePicker::score() {
 
-  static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
+  static_assert(Type == CAPTURES || Type == QUIETS, "Wrong type");
 
   Bitboard threatened, threatenedByPawn, threatenedByMinor, threatenedByRook;
   if constexpr (Type == QUIETS)
@@ -149,16 +149,6 @@ void MovePicker::score() {
                           :                                                                           0)
                           :                                                                           0);
 
-      else // Type == EVASIONS
-      {
-          if (pos.capture(m))
-              m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
-                       - Value(type_of(pos.moved_piece(m)));
-          else
-              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       - (1 << 28);
-      }
 }
 
 /// MovePicker::select() returns the next move satisfying a predicate function.
@@ -266,7 +256,6 @@ top:
       cur = moves;
       endMoves = generate<EVASIONS>(pos, cur);
 
-      score<EVASIONS>();
       ++stage;
       [[fallthrough]];
 
