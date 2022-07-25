@@ -157,7 +157,7 @@ void MovePicker::score() {
           else
               m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
                        + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                       -     (type_of(pos.moved_piece(m)) == KING ? 1 << 14 : 1 << 28);
+                       -     (type_of(pos.moved_piece(m)) == KING ? 1 << 28 : 1 << 14);
       }
 }
 
