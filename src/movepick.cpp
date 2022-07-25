@@ -260,7 +260,7 @@ top:
       [[fallthrough]];
 
   case EVASION:
-      return select<Best>([](){ return true; });
+      return select<Next>([](){ return true; });
 
   case PROBCUT:
       return select<Next>([&](){ return pos.see_ge(*cur, threshold); });
