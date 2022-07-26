@@ -26,9 +26,9 @@ namespace Stockfish {
 namespace {
 
   template<GenType Type, Direction D>
-  ExtMove* make_promotions(ExtMove* moveList, Square to) {
+  ExtMove* make_promotions(ExtMove* moveList, Square to, bool isProbcut = false) {
 
-    if (Type == CAPTURES || Type == EVASIONS || Type == NON_EVASIONS)
+    if ((Type == CAPTURES && !isProbcut) || Type == EVASIONS || Type == NON_EVASIONS)
         *moveList++ = make<PROMOTION>(to - D, to, QUEEN);
 
     if (Type == QUIETS || Type == EVASIONS || Type == NON_EVASIONS)
@@ -43,7 +43,7 @@ namespace {
 
 
   template<Color Us, GenType Type>
-  ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
+  ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target, bool isProbcut) {
 
     constexpr Color     Them     = ~Us;
     constexpr Bitboard  TRank7BB = (Us == WHITE ? Rank7BB    : Rank2BB);
@@ -112,7 +112,7 @@ namespace {
             moveList = make_promotions<Type, UpLeft >(moveList, pop_lsb(b2));
 
         while (b3)
-            moveList = make_promotions<Type, Up     >(moveList, pop_lsb(b3));
+            moveList = make_promotions<Type, Up     >(moveList, pop_lsb(b3), isProbcut);
     }
 
     // Standard and en passant captures
@@ -179,7 +179,7 @@ namespace {
 
 
   template<Color Us, GenType Type>
-  ExtMove* generate_all(const Position& pos, ExtMove* moveList) {
+  ExtMove* generate_all(const Position& pos, ExtMove* moveList, bool isProbcut) {
 
     static_assert(Type != LEGAL, "Unsupported type in generate_all()");
 
@@ -195,7 +195,7 @@ namespace {
                : Type == CAPTURES     ?  pos.pieces(~Us)
                                       : ~pos.pieces(   ); // QUIETS || QUIET_CHECKS
 
-        moveList = generate_pawn_moves<Us, Type>(pos, moveList, target);
+        moveList = generate_pawn_moves<Us, Type>(pos, moveList, target, isProbcut);
         moveList = generate_moves<Us, KNIGHT, Checks>(pos, moveList, target);
         moveList = generate_moves<Us, BISHOP, Checks>(pos, moveList, target);
         moveList = generate_moves<Us,   ROOK, Checks>(pos, moveList, target);
@@ -232,29 +232,29 @@ namespace {
 /// Returns a pointer to the end of the move list.
 
 template<GenType Type>
-ExtMove* generate(const Position& pos, ExtMove* moveList) {
+ExtMove* generate(const Position& pos, ExtMove* moveList, bool isProbcut) {
 
   static_assert(Type != LEGAL, "Unsupported type in generate()");
   assert((Type == EVASIONS) == (bool)pos.checkers());
 
   Color us = pos.side_to_move();
 
-  return us == WHITE ? generate_all<WHITE, Type>(pos, moveList)
-                     : generate_all<BLACK, Type>(pos, moveList);
+  return us == WHITE ? generate_all<WHITE, Type>(pos, moveList, isProbcut)
+                     : generate_all<BLACK, Type>(pos, moveList, isProbcut);
 }
 
 // Explicit template instantiations
-template ExtMove* generate<CAPTURES>(const Position&, ExtMove*);
-template ExtMove* generate<QUIETS>(const Position&, ExtMove*);
-template ExtMove* generate<EVASIONS>(const Position&, ExtMove*);
-template ExtMove* generate<QUIET_CHECKS>(const Position&, ExtMove*);
-template ExtMove* generate<NON_EVASIONS>(const Position&, ExtMove*);
+template ExtMove* generate<CAPTURES>(const Position&, ExtMove*, bool);
+template ExtMove* generate<QUIETS>(const Position&, ExtMove*, bool);
+template ExtMove* generate<EVASIONS>(const Position&, ExtMove*, bool);
+template ExtMove* generate<QUIET_CHECKS>(const Position&, ExtMove*, bool);
+template ExtMove* generate<NON_EVASIONS>(const Position&, ExtMove*, bool);
 
 
 /// generate<LEGAL> generates all the legal moves in the given position
 
 template<>
-ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
+ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList, bool) {
 
   Color us = pos.side_to_move();
   Bitboard pinned = pos.blockers_for_king(us) & pos.pieces(us);

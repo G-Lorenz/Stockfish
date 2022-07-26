@@ -873,7 +873,7 @@ namespace {
         while ((move = mp.next_move()) != MOVE_NONE)
             if (move != excludedMove && pos.legal(move))
             {
-                assert(pos.capture(move) || promotion_type(move) == QUEEN);
+                assert(pos.capture(move));
 
                 ss->currentMove = move;
                 ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]

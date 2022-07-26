@@ -67,6 +67,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 {
   assert(d > 0);
 
+  isProbcut = false;
   stage = (pos.checkers() ? EVASION_TT : MAIN_TT) +
           !(ttm && pos.pseudo_legal(ttm));
 }
@@ -80,6 +81,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const ButterflyHist
 {
   assert(d <= 0);
 
+  isProbcut = false;
   stage = (pos.checkers() ? EVASION_TT : QSEARCH_TT) +
           !(   ttm
             && (pos.checkers() || depth > DEPTH_QS_RECAPTURES || to_sq(ttm) == recaptureSquare)
@@ -93,6 +95,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Value th, Depth d, const Cap
 {
   assert(!pos.checkers());
 
+  isProbcut = true;
   stage = PROBCUT_TT + !(ttm && pos.capture(ttm)
                              && pos.pseudo_legal(ttm)
                              && pos.see_ge(ttm, threshold));
@@ -198,7 +201,7 @@ top:
   case PROBCUT_INIT:
   case QCAPTURE_INIT:
       cur = endBadCaptures = moves;
-      endMoves = generate<CAPTURES>(pos, cur);
+      endMoves = generate<CAPTURES>(pos, cur, isProbcut);
 
       score<CAPTURES>();
       partial_insertion_sort(cur, endMoves, -3000 * depth);
