@@ -78,7 +78,7 @@ namespace {
   }
 
   int futility_move_count(bool improving, Depth depth) {
-    return (A[1]+A[2]*improving)+(B[1]+B[2]*improving+(C[1]+C[2]*improving)*depth)*depth;
+    return (A[0]+A[1]*improving)+(B[0]+B[1]*improving+(C[0]+C[1]*improving)*depth)*depth;
   }
 
   // History and stats update bonus, based on depth
