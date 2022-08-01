@@ -84,9 +84,9 @@ namespace {
     return std::min((9 * d + 270) * d - 311 , 2145);
   }
 
-  // Add a small random component to draw evaluations to avoid 3-fold blindness
+  // In case of draw eval prefer more complex positions
   Value value_draw(const Thread* thisThread) {
-    return VALUE_DRAW - 1 + Value(thisThread->nodes & 0x2);
+    return VALUE_DRAW + Value(std::clamp(int(thisThread->complexityAverage.value() - 400) / 32, -2, 2));
   }
 
   // Skill structure is used to implement strength limit. If we have an uci_elo then
@@ -742,10 +742,6 @@ namespace {
         else // Fall back to (semi)classical complexity for TT hits, the NNUE complexity is lost
             complexity = abs(ss->staticEval - pos.psq_eg_stm());
 
-        // Randomize draw evaluation
-        if (eval == VALUE_DRAW)
-            eval = value_draw(thisThread);
-
         // ttValue can be used as a better position evaluation (~4 Elo)
         if (    ttValue != VALUE_NONE
             && (tte->bound() & (ttValue > eval ? BOUND_LOWER : BOUND_UPPER)))
@@ -760,7 +756,13 @@ namespace {
             tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
+    complexity = abs(ss->staticEval - (us == WHITE ? eg_value(pos.psq_score()) : -eg_value(pos.psq_score())));
+
     thisThread->complexityAverage.update(complexity);
+
+    // Randomize draw evaluation
+    if (eval == VALUE_DRAW)
+        eval = value_draw(thisThread);
 
     // Use static evaluation difference to improve quiet move ordering (~3 Elo)
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
