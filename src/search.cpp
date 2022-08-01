@@ -756,8 +756,6 @@ namespace {
             tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
-    complexity = abs(ss->staticEval - (us == WHITE ? eg_value(pos.psq_score()) : -eg_value(pos.psq_score())));
-
     thisThread->complexityAverage.update(complexity);
 
     // Randomize draw evaluation
