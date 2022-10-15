@@ -36,7 +36,18 @@
 #include "syzygy/tbprobe.h"
 
 namespace Stockfish {
-
+Value PSV = PawnValueEg,
+      NSV = KnightValueEg,
+      BSV = BishopValueEg,
+      RSV = RookValueEg,
+      QSV = QueenValueEg;
+auto f1 = [](int m){return Range(3 * m / 4, 5 * m / 4);};
+TUNE(SetRange(100, 300), PSV);
+TUNE(SetRange(f1), NSV, BSV, RSV, QSV);
+Value PieceSearchValue[PIECE_NB] = {
+    VALUE_ZERO, PSV, NSV, BSV, RSV, QSV, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PSV, NSV, BSV, RSV, QSV, VALUE_ZERO, VALUE_ZERO
+};
 namespace Search {
 
   LimitsType Limits;
@@ -1006,7 +1017,7 @@ moves_loop: // When in check, search starts here
                   && !PvNode
                   && lmrDepth < 7
                   && !ss->inCheck
-                  && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
+                  && ss->staticEval + 180 + 201 * lmrDepth + PieceSearchValue[pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
                   continue;
 
@@ -1517,7 +1528,7 @@ moves_loop: // When in check, search starts here
           if (moveCount > 2)
               continue;
 
-          futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
+          futilityValue = futilityBase + PieceSearchValue[pos.piece_on(to_sq(move))];
 
           if (futilityValue <= alpha)
           {
