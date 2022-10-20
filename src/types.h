@@ -192,6 +192,12 @@ enum Value : int {
   RookValueMg   = 1276,  RookValueEg   = 1380,
   QueenValueMg  = 2538,  QueenValueEg  = 2682,
 
+  PawnSearchValue   = 201,
+  KnightSearchValue = 858,
+  BishopSearchValue = 845,
+  RookSearchValue   = 1343,
+  QueenSearchValue  = 2676,
+
   MidgameLimit  = 15258, EndgameLimit  = 3915
 };
 
@@ -213,6 +219,11 @@ constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
     VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
   { VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO,
     VALUE_ZERO, PawnValueEg, KnightValueEg, BishopValueEg, RookValueEg, QueenValueEg, VALUE_ZERO, VALUE_ZERO }
+};
+
+constexpr Value PieceSearchValue[PIECE_NB] = {
+    VALUE_ZERO, PawnSearchValue, KnightSearchValue, BishopSearchValue, RookSearchValue, QueenSearchValue, VALUE_ZERO, VALUE_ZERO,
+    VALUE_ZERO, PawnSearchValue, KnightSearchValue, BishopSearchValue, RookSearchValue, QueenSearchValue, VALUE_ZERO, VALUE_ZERO
 };
 
 typedef int Depth;
