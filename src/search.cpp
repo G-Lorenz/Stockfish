@@ -987,9 +987,10 @@ moves_loop: // When in check, search starts here
       Value delta = beta - alpha;
 
       // Step 14. Pruning at shallow depth (~98 Elo). Depth conditions are important for mate finding.
-      if (  !rootNode
-          && pos.non_pawn_material(us)
-          && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
+      if (   !rootNode
+          && !givesCheck
+          &&  pos.non_pawn_material(us)
+          &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
           // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~7 Elo)
           moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1000,8 +1001,7 @@ moves_loop: // When in check, search starts here
           if (capture)
           {
               // Futility pruning for captures (~0 Elo)
-              if (   !givesCheck
-                  && !PvNode
+              if (   !PvNode
                   && lmrDepth < 7
                   && !ss->inCheck
                   && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
