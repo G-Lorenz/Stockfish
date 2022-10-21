@@ -1012,7 +1012,13 @@ moves_loop: // When in check, search starts here
               if (!pos.see_ge(move, Value(-222) * depth))
                   continue;
           }
-          else if (!givesCheck)
+          else if (givesCheck)
+          {
+              // SEE based pruning
+              if (!pos.see_ge(move, Value(-200) * depth))
+                  continue;
+          }
+          else
           {
               int history =   (*contHist[0])[movedPiece][to_sq(move)]
                             + (*contHist[1])[movedPiece][to_sq(move)]
