@@ -997,8 +997,7 @@ moves_loop: // When in check, search starts here
           // Reduced depth of the next LMR search
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount, delta, thisThread->rootDelta), 0);
 
-          if (   capture
-              || givesCheck)
+          if (capture)
           {
               // Futility pruning for captures (~0 Elo)
               if (   !givesCheck
@@ -1007,10 +1006,6 @@ moves_loop: // When in check, search starts here
                   && !ss->inCheck
                   && ss->staticEval + 180 + 201 * lmrDepth + PieceValue[EG][pos.piece_on(to_sq(move))]
                    + captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] / 6 < alpha)
-                  continue;
-
-              // SEE based pruning (~9 Elo)
-              if (!pos.see_ge(move, Value(-222) * depth))
                   continue;
           }
           else
@@ -1030,6 +1025,10 @@ moves_loop: // When in check, search starts here
               if (   !ss->inCheck
                   && lmrDepth < 13
                   && ss->staticEval + 106 + 145 * lmrDepth + history / 52 <= alpha)
+                  continue;
+
+              // SEE based pruning (~9 Elo)
+              if (givesCheck && !pos.see_ge(move, Value(-222) * depth))
                   continue;
 
               // Prune moves with negative SEE (~3 Elo)
