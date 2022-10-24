@@ -1015,7 +1015,7 @@ moves_loop: // When in check, search starts here
           else if (givesCheck)
           {
               // SEE based pruning
-              if (!pos.see_ge(move, Value(-244) * depth))
+              if (!pos.see_ge(move, Value(-266) * depth))
                   continue;
           }
           else
