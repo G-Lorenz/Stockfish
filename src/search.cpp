@@ -785,7 +785,7 @@ namespace {
         &&  eval >= beta
         &&  eval < 28031) // larger than VALUE_KNOWN_WIN, but smaller than TB wins
     {
-        tte->save(posKey, value_to_tt(eval, ss->ply), false, BOUND_LOWER, depth, MOVE_NONE, ss->staticEval);
+        tte->save(posKey, value_to_tt(eval, ss->ply), false, BOUND_LOWER, depth - 3, MOVE_NONE, ss->staticEval);
         return eval;
     }
 
